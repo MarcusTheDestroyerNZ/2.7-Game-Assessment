@@ -47,6 +47,28 @@ def render_tilemap(surface, tilemap, offset_x, offset_y, zoom):
                     # Adjust position based on zoom
                     surface.blit(scaled_tile, (x * tile_width + offset_x, y * tile_height + offset_y))
 
+# Function to render the grid only on tiles with a specific gid in the tilemap
+def render_grid(surface, tilemap, offset_x, offset_y, zoom):
+    tile_width = int(tilemap.tilewidth * zoom)
+    tile_height = int(tilemap.tileheight * zoom)
+
+    # Iterate through the layers and tiles
+    for layer in tilemap.visible_layers:
+        if hasattr(layer, "data"):  # Use layer.data to access tile GIDs
+            for y in range(layer.height):  # Iterate over rows
+                for x in range(layer.width):  # Iterate over columns
+                    gid = layer.data[y][x]  # Get the gid of the tile
+                    if gid == 5:  # Only draw the grid for tiles with gid 135
+                        # Calculate the position of the tile
+                        grid_x = x * tile_width + offset_x
+                        grid_y = y * tile_height + offset_y
+
+                        # Draw the grid lines around the tile
+                        pygame.draw.line(surface, (200, 200, 200), (grid_x, grid_y), (grid_x + tile_width, grid_y))  # Top
+                        pygame.draw.line(surface, (200, 200, 200), (grid_x, grid_y), (grid_x, grid_y + tile_height))  # Left
+                        pygame.draw.line(surface, (200, 200, 200), (grid_x + tile_width, grid_y), (grid_x + tile_width, grid_y + tile_height))  # Right
+                        pygame.draw.line(surface, (200, 200, 200), (grid_x, grid_y + tile_height), (grid_x + tile_width, grid_y + tile_height))  # Bottom
+
 # Main game loop
 running = True
 while running:
@@ -103,6 +125,9 @@ while running:
 
     # Render the tilemap on the right side of the screen with camera offsets and zoom
     render_tilemap(screen, tilemap, gui_width + camera_x, camera_y, zoom)
+
+    # Render the grid on top of the tilemap
+    render_grid(screen, tilemap, gui_width + camera_x, camera_y, zoom)
 
     # Draw the GUI area (ensures it appears on top)
     pygame.draw.rect(screen, (50, 50, 50), gui_rect)  # Gray background for the GUI
