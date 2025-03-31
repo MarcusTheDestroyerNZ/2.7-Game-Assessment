@@ -1,0 +1,69 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "Map1/3.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "Map1/Map.tmx": {
+            "scale": 0.69765625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 832.7883538633819,
+                "y": 644.3001119820829
+            }
+        },
+        "Map1/Tileset.tsx": {
+            "dynamicWrapping": true
+        },
+        "Map1/forestTileset.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Map1/forest_.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "Map1/forest_resized.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "Map1/mlrMD4.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Map Testing/Map1",
+    "map.height": 30,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 64,
+    "map.tileWidth": 64,
+    "openFiles": [
+    ],
+    "project": "Map1.tiled-project",
+    "recentFiles": [
+        "Map1/Map.tmx",
+        "Map1/forestTileset.tsx",
+        "Map1/forest_resized.tsx",
+        "Map1/3.tsx",
+        "Map1/forest_.tsx",
+        "Map1/mlrMD4.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 64,
+        "width": 64
+    },
+    "tileset.transparentColor": "#000000",
+    "tileset.type": 0
+}
