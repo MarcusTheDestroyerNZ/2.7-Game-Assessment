@@ -6,7 +6,7 @@ from pytmx.util_pygame import load_pygame
 pygame.init()
 
 # Screen dimensions
-screen_width = 32 * 64
+screen_width = 28 * 64
 screen_height = 16 * 64
 
 # Create the screen
@@ -14,7 +14,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Sustainable Energy Game")
 
 # Define GUI dimensions
-gui_width = 400  # Width of the GUI on the left side
+gui_width = 500  # Width of the GUI on the left side
 gui_rect = pygame.Rect(0, 0, gui_width, screen_height)
 
 # Load the tilemap
@@ -33,6 +33,10 @@ zoom = 1.0  # Initial zoom level
 zoom_step = 0.1  # Step for zooming in/out
 min_zoom = 0.5  # Minimum zoom level
 max_zoom = 2.0  # Maximum zoom level
+
+# Add a button to toggle the grid system
+button_rect = pygame.Rect(20, 60, 100, 40)  # Button position and size
+show_grid = True  # Variable to track whether the grid is shown
 
 # Function to render the tilemap
 def render_tilemap(surface, tilemap, offset_x, offset_y, zoom):
@@ -78,13 +82,17 @@ while running:
 
         # Handle mouse button down
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:  # Left mouse button
-                dragging = True
-                last_mouse_pos = event.pos
+            if event.button == 3:  # Right mouse button
+                # Check if the button was clicked
+                if button_rect.collidepoint(event.pos):
+                    show_grid = not show_grid  # Toggle the grid visibility
+                else:
+                    dragging = True
+                    last_mouse_pos = event.pos
 
         # Handle mouse button up
         elif event.type == pygame.MOUSEBUTTONUP:
-            if event.button == 1:  # Left mouse button
+            if event.button == 3:  # Right mouse button
                 dragging = False
                 last_mouse_pos = None
 
@@ -126,11 +134,19 @@ while running:
     # Render the tilemap on the right side of the screen with camera offsets and zoom
     render_tilemap(screen, tilemap, gui_width + camera_x, camera_y, zoom)
 
-    # Render the grid on top of the tilemap
-    render_grid(screen, tilemap, gui_width + camera_x, camera_y, zoom)
+    # Render the grid on top of the tilemap if enabled
+    if show_grid:
+        render_grid(screen, tilemap, gui_width + camera_x, camera_y, zoom)
 
     # Draw the GUI area (ensures it appears on top)
     pygame.draw.rect(screen, (50, 50, 50), gui_rect)  # Gray background for the GUI
+
+    # Draw the toggle button
+    pygame.draw.rect(screen, (100, 100, 100), button_rect)  # Button background
+    font = pygame.font.Font(None, 24)
+    button_text = "Build: ON" if show_grid else "Build: OFF"
+    text_surface = font.render(button_text, True, (255, 255, 255))
+    screen.blit(text_surface, (button_rect.x + 10, button_rect.y + 10))  # Center text in button
 
     # Add text or buttons to the GUI (example: a title)
     font = pygame.font.Font(None, 36)
