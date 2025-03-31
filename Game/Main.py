@@ -82,23 +82,28 @@ while running:
 
         # Handle mouse button down
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 3:  # Right mouse button
+            if event.button == 1:  # Left mouse button
                 # Check if the button was clicked
                 if button_rect.collidepoint(event.pos):
                     show_grid = not show_grid  # Toggle the grid visibility
                 else:
-                    dragging = True
-                    last_mouse_pos = event.pos
+                    print("Left mouse button clicked")
+
+            elif event.button == 3:  # Right mouse button
+                # Start dragging
+                dragging = True
+                last_mouse_pos = event.pos
 
         # Handle mouse button up
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 3:  # Right mouse button
+                # Stop dragging
                 dragging = False
                 last_mouse_pos = None
 
         # Handle mouse motion
         elif event.type == pygame.MOUSEMOTION:
-            if dragging:
+            if dragging:  # Only move the camera if dragging is active
                 mouse_x, mouse_y = event.pos
                 dx = mouse_x - last_mouse_pos[0]
                 dy = mouse_y - last_mouse_pos[1]
