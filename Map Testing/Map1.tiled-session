@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "Map1/Assets_resized.tsx",
     "expandedProjectPaths": [
     ],
     "fileStates": {
@@ -12,20 +12,35 @@
             "scaleInDock": 0.5,
             "scaleInEditor": 1
         },
+        "Map1/Assets.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Map1/Assets2.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Map1/Assets_resized.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "Map1/Map.tmx": {
-            "scale": 0.69765625,
+            "scale": 0.46065104166666665,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 832.7883538633819,
-                "y": 644.3001119820829
+                "x": 620.8604217310193,
+                "y": 671.8751766634631
             }
         },
         "Map1/Tileset.tsx": {
-            "dynamicWrapping": true
+            "dynamicWrapping": true,
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
         },
         "Map1/forestTileset.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 1,
+            "scaleInDock": 0.5,
             "scaleInEditor": 1
         },
         "Map1/forest_.tsx": {
@@ -43,17 +58,27 @@
             "scaleInEditor": 1
         }
     },
-    "last.imagePath": "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Map Testing/Map1",
+    "last.imagePath": "C:/Users/Owner/Downloads",
     "map.height": 30,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 64,
     "map.tileWidth": 64,
     "openFiles": [
+        "Map1/Map.tmx",
+        "Map1/forestTileset.tsx",
+        "Map1/Tileset.tsx",
+        "Map1/Assets2.tsx",
+        "Map1/Assets.tsx",
+        "Map1/Assets_resized.tsx"
     ],
     "project": "Map1.tiled-project",
     "recentFiles": [
         "Map1/Map.tmx",
         "Map1/forestTileset.tsx",
+        "Map1/Tileset.tsx",
+        "Map1/Assets2.tsx",
+        "Map1/Assets.tsx",
+        "Map1/Assets_resized.tsx",
         "Map1/forest_resized.tsx",
         "Map1/3.tsx",
         "Map1/forest_.tsx",

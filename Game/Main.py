@@ -20,6 +20,10 @@ gui_rect = pygame.Rect(0, 0, gui_width, screen_height)
 # Load the tilemap
 tilemap = load_pygame("Map.tmx")
 
+# Load the solar panel image
+solar_panel_image = pygame.image.load("Assets/SolarPanel.png")
+solar_panel_image = pygame.transform.scale(solar_panel_image, (tilemap.tilewidth, tilemap.tileheight))
+
 # Camera offsets
 camera_x = 0
 camera_y = 0
@@ -29,14 +33,16 @@ dragging = False
 last_mouse_pos = None
 
 # Zoom variables
-zoom = 1.0  # Initial zoom level
-zoom_step = 0.1  # Step for zooming in/out
-min_zoom = 0.5  # Minimum zoom level
+zoom = 0.75  # Initial zoom level
+zoom_step = 0.05  # Step for zooming in/out
+min_zoom = 0.4  # Minimum zoom level
 max_zoom = 2.0  # Maximum zoom level
 
 # Add a button to toggle the grid system
-button_rect = pygame.Rect(20, 60, 100, 40)  # Button position and size
-show_grid = True  # Variable to track whether the grid is shown
+show_grid = False
+
+# Add a dictionary to track placed blocks
+placed_blocks = {}
 
 # Function to render the tilemap
 def render_tilemap(surface, tilemap, offset_x, offset_y, zoom):
@@ -73,40 +79,95 @@ def render_grid(surface, tilemap, offset_x, offset_y, zoom):
                         pygame.draw.line(surface, (200, 200, 200), (grid_x + tile_width, grid_y), (grid_x + tile_width, grid_y + tile_height))  # Right
                         pygame.draw.line(surface, (200, 200, 200), (grid_x, grid_y + tile_height), (grid_x + tile_width, grid_y + tile_height))  # Bottom
 
+# Function to render placed blocks
+def render_placed_blocks(surface, placed_blocks, offset_x, offset_y, zoom):
+    tile_width = int(tilemap.tilewidth * zoom)
+    tile_height = int(tilemap.tileheight * zoom)
+
+    for (grid_x, grid_y), _ in placed_blocks.items():
+        block_x = grid_x * tile_width + offset_x
+        block_y = grid_y * tile_height + offset_y
+        # Scale the solar panel image based on the zoom level
+        scaled_image = pygame.transform.scale(solar_panel_image, (tile_width, tile_height))
+        surface.blit(scaled_image, (block_x, block_y))
+
+# Function to make text display
+def text(text, size, color, position, button=False, button_size=(0, 0), button_color=(0, 0, 0)):
+    font = pygame.font.Font(None, size)
+    display_text = font.render(text, True, color)
+    if button:
+        button_rect = pygame.Rect(position, button_size)
+        pygame.draw.rect(screen, button_color, button_rect)
+        screen.blit(display_text, (button_rect.x + 10, button_rect.y + 10))
+        return button_rect  # Return the button's rectangle for collision detection
+    else:
+        screen.blit(display_text, position)
+        return None
+
 # Main game loop
 running = True
 while running:
+    
+
+    # Fill the screen with a color
+    screen.fill((92, 105, 160))
+
+    # Render the tilemap on the right side of the screen with camera offsets and zoom
+    render_tilemap(screen, tilemap, gui_width + camera_x, camera_y, zoom)
+
+    # Render the grid on top of the tilemap if enabled
+    if show_grid:
+        render_grid(screen, tilemap, gui_width + camera_x, camera_y, zoom)
+
+    # Render placed blocks
+    render_placed_blocks(screen, placed_blocks, gui_width + camera_x, camera_y, zoom)
+
+    # Draw the GUI area (ensures it appears on top)
+    pygame.draw.rect(screen, (50, 50, 50), gui_rect)  # Gray background for the GUI
+
+    # Draw the GUI text and button
+    button_rect = text("Build: ON" if show_grid else "Build: OFF", 24, (255, 255, 255), (20, 100), True, (95, 35), (100, 100, 100))
+    text("GUI", 36, (255, 255, 255), (20, 20))
+    text("Buildings", 30, (255, 255, 255), (20, 200))
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
         # Handle mouse button down
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:  # Left mouse button
-                # Check if the button was clicked
-                if button_rect.collidepoint(event.pos):
-                    show_grid = not show_grid  # Toggle the grid visibility
-                else:
-                    print("Left mouse button clicked")
+            mouse_x, mouse_y = event.pos
 
-            elif event.button == 3:  # Right mouse button
-                # Start dragging
+            # Check if the button was clicked
+            if button_rect and button_rect.collidepoint((mouse_x, mouse_y)):
+                show_grid = not show_grid  # Toggle the grid visibility
+
+            elif show_grid:  # Only allow placing/removing blocks when the grid is active
+                grid_x = (mouse_x - gui_width - camera_x) // int(tilemap.tilewidth * zoom)
+                grid_y = (mouse_y - camera_y) // int(tilemap.tileheight * zoom)
+
+                if event.button == 1:  # Left mouse button for placing blocks
+                    placed_blocks[(grid_x, grid_y)] = "solar_panel"  # Use a key to indicate the block type
+                elif event.button == 3:  # Right mouse button for removing blocks
+                    if (grid_x, grid_y) in placed_blocks:
+                        del placed_blocks[(grid_x, grid_y)]
+
+            # Start dragging if right mouse button is pressed
+            if event.button == 3:
                 dragging = True
                 last_mouse_pos = event.pos
 
         # Handle mouse button up
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 3:  # Right mouse button
-                # Stop dragging
                 dragging = False
                 last_mouse_pos = None
 
         # Handle mouse motion
         elif event.type == pygame.MOUSEMOTION:
             if dragging:  # Only move the camera if dragging is active
-                mouse_x, mouse_y = event.pos
-                dx = mouse_x - last_mouse_pos[0]
-                dy = mouse_y - last_mouse_pos[1]
+                dx = event.pos[0] - last_mouse_pos[0]
+                dy = event.pos[1] - last_mouse_pos[1]
                 camera_x += dx
                 camera_y += dy
                 last_mouse_pos = event.pos
@@ -132,31 +193,6 @@ while running:
 
             # Update the zoom level
             zoom = new_zoom
-
-    # Fill the screen with a color
-    screen.fill((92, 105, 160))
-
-    # Render the tilemap on the right side of the screen with camera offsets and zoom
-    render_tilemap(screen, tilemap, gui_width + camera_x, camera_y, zoom)
-
-    # Render the grid on top of the tilemap if enabled
-    if show_grid:
-        render_grid(screen, tilemap, gui_width + camera_x, camera_y, zoom)
-
-    # Draw the GUI area (ensures it appears on top)
-    pygame.draw.rect(screen, (50, 50, 50), gui_rect)  # Gray background for the GUI
-
-    # Draw the toggle button
-    pygame.draw.rect(screen, (100, 100, 100), button_rect)  # Button background
-    font = pygame.font.Font(None, 24)
-    button_text = "Build: ON" if show_grid else "Build: OFF"
-    text_surface = font.render(button_text, True, (255, 255, 255))
-    screen.blit(text_surface, (button_rect.x + 10, button_rect.y + 10))  # Center text in button
-
-    # Add text or buttons to the GUI (example: a title)
-    font = pygame.font.Font(None, 36)
-    text = font.render("GUI", True, (255, 255, 255))
-    screen.blit(text, (20, 20))  # Position the text inside the GUI
 
     # Update the display
     pygame.display.flip()
