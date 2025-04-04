@@ -1,27 +1,33 @@
 import pygame
 import sys
 from pytmx.util_pygame import load_pygame
+import os
 
 # Initialize Pygame
 pygame.init()
 
 # Screen dimensions
-screen_width = 28 * 64
-screen_height = 16 * 64
+os.environ['SDL_VIDEO_CENTERED'] = '1'  # Center the window on the screen
+screen_width = 16 * 64
+screen_height = 8 * 64
 
 # Create the screen
-screen = pygame.display.set_mode((screen_width, screen_height))
+screen = pygame.display.set_mode((screen_width, screen_height), pygame.RESIZABLE)
 pygame.display.set_caption("Sustainable Energy Game")
 
+info = pygame.display.Info()
+screen_width = info.current_w
+screen_height = info.current_h
+
 # Define GUI dimensions
-gui_width = 500  # Width of the GUI on the left side
+gui_width = screen_width * 0.3  # Width of the GUI on the left side
 gui_rect = pygame.Rect(0, 0, gui_width, screen_height)
 
 # Load the tilemap
 tilemap = load_pygame("Map.tmx")
 
 # Load the solar panel image
-solar_panel_image = pygame.image.load("Assets/SolarPanel.png")
+solar_panel_image = pygame.image.load("Assets/Mountain.png")
 solar_panel_image = pygame.transform.scale(solar_panel_image, (tilemap.tilewidth, tilemap.tileheight))
 
 # Camera offsets
@@ -107,7 +113,15 @@ def text(text, size, color, position, button=False, button_size=(0, 0), button_c
 # Main game loop
 running = True
 while running:
-    
+    info = pygame.display.Info()
+
+    if screen_width != info.current_w or screen_height != info.current_h:
+        
+        screen_width = info.current_w
+        screen_height = info.current_h
+
+        gui_width = screen_width * 0.3  # Width of the GUI on the left side
+        gui_rect = pygame.Rect(0, 0, gui_width, screen_height)
 
     # Fill the screen with a color
     screen.fill((92, 105, 160))
