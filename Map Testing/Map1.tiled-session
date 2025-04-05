@@ -6,7 +6,19 @@
     "activeFile": "Map1/Assets_resized.tsx",
     "expandedProjectPaths": [
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/forestTileset.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/terrain_map.tmx#Terrain": {
+            "dynamicWrapping": true
+        },
+        "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/terrain_tileset.tsx": {
+            "dynamicWrapping": true,
+            "scaleInEditor": 1
+        },
         "Map1/3.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 0.5,
@@ -29,8 +41,8 @@
             "scale": 0.46065104166666665,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 620.8604217310193,
-                "y": 671.8751766634631
+                "x": 959.5115608570297,
+                "y": 969.280343716434
             }
         },
         "Map1/Tileset.tsx": {
@@ -58,7 +70,7 @@
             "scaleInEditor": 1
         }
     },
-    "last.imagePath": "C:/Users/Owner/Downloads",
+    "last.imagePath": "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/Assets",
     "map.height": 30,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 64,
@@ -73,6 +85,7 @@
     ],
     "project": "Map1.tiled-project",
     "recentFiles": [
+        "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/terrain_tileset.tsx",
         "Map1/Map.tmx",
         "Map1/forestTileset.tsx",
         "Map1/Tileset.tsx",
@@ -84,11 +97,12 @@
         "Map1/forest_.tsx",
         "Map1/mlrMD4.tsx"
     ],
+    "tileset.embedInMap": true,
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
         "height": 64,
         "width": 64
     },
     "tileset.transparentColor": "#000000",
-    "tileset.type": 0
+    "tileset.type": 1
 }
