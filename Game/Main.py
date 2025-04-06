@@ -47,19 +47,19 @@ battery_images = [
 ]
 
 building_prices = {
-    "wind_turbine": 10,
-    "solar_panel": 50,
-    "coal_plant": 500,
-    "nuclear_plant": 1000,
-    "fusion_plant": 2000,
+    "wind_turbine": 1,
+    "solar_panel": 200,
+    "coal_plant": 10000,
+    "nuclear_plant": 100000,
+    "fusion_plant": 10000000,
     "lab1": 100,
-    "lab2": 500,
-    "lab3": 1500,
-    "house1": 10,
-    "house2": 100,
-    "house3": 750,
-    "battery1": 50,
-    "battery2": 500
+    "lab2": 5000,
+    "lab3": 50000,
+    "house1": 50,
+    "house2": 500,
+    "house3": 10000,
+    "battery1": 100,
+    "battery2": 1000
 }
 
 building_mapping = {
@@ -100,42 +100,147 @@ destroy_button_rect = None
 selected_building = None
 destroy_mode = False
 
-global money, money_pm, power, max_power, power_pm, research, research_pm, heat, max_heat, heat_pm
-money = 20
-money_pm = 0
+global money, money_ps, power, max_power, power_ps, research, research_ps, heat, max_heat, heat_pm
+money = 10000
+money_ps = 0
 power = 0
 max_power = 50
-power_pm = 0
+power_ps = 0
 research = 0
-research_pm = 0
+research_ps = 0
 heat = 0
 max_heat = 0
-heat_pm = 0
+heat_ps = 0
 
 battery1_power = 50
-battery2_power = 100
+battery2_power = 500
 
 lab1_research_per_second = 1
 lab2_research_per_second = 10
 lab3_research_per_second = 100
 
-wind_turbine_power_per_second = 1
-solar_panel_power_per_second = 5
-coal_plant_power_per_second = 25
-nuclear_plant_power_per_second = 50
-fusion_plant_power_per_second = 100
+wind_turbine_power_per_second = 0.15
+solar_panel_power_per_second = 3
+coal_plant_power_per_second = 300
+nuclear_plant_power_per_second = 500
+fusion_plant_power_per_second = 10000
 
-house1_money_per_second = 5
-house2_money_per_second = 25
-house3_money_per_second = 50
+house1_money_per_second = 10
+house2_money_per_second = 50
+house3_money_per_second = 250
 
 game_clock = pygame.time.Clock()
 tick_interval = 1000
 last_tick = pygame.time.get_ticks()
 
 global research_button_rect
-research_tree_open = True
+research_tree_open = False
 research_button_rect = None
+
+global sell_power_button_rect
+sell_power_button_rect = None
+
+# Add tick limits for power plants
+power_plant_ticks = {
+    "wind_turbine": 10,
+    "solar_panel": 100,
+    "coal_plant": 400,
+    "nuclear_plant": 800,
+    "fusion_plant": 1200
+}
+
+# Track remaining ticks for each placed power plant
+placed_power_plant_ticks = {}
+
+# Percentage of the building cost returned when selling
+sell_percentage = 0  # Change this value to adjust the refund percentage (e.g., 0.5 = 50%)
+
+# Define locked tiles for each region (manually assign tiles here)
+locked_tiles = {
+    "Stewart Island": {
+        "tiles": {
+            (6, 26),
+            (5, 27), (6, 27),
+        },
+        "locked": True,
+        "price": 0
+    },
+    "Southland": {
+        "tiles": {
+            (8, 16), (9, 16),
+            (7, 17), (8, 17), (9, 17),
+            (6, 18), (7, 18), (8, 18), (9, 18), (10, 18),
+            (5, 19), (6, 19), (7, 19), (8, 19), (9, 19), (10, 19),
+            (4, 20), (5, 20), (6, 20), (7, 20), (8, 20), (9, 20), (10, 20),
+            (4, 21), (5, 21), (6, 21), (7, 21), (8, 21), (9, 21), (10, 21),
+            (5, 22), (6, 22), (7, 22), (8, 22), (9, 22), (10, 22), (11, 22),
+            (8, 23), (9, 23), (10, 23), (11, 23),
+            (11, 24)
+        },
+        "locked": True,
+        "price": 5
+    },
+    "Otago": {
+        "tiles": {
+            (14, 15), (15, 15), (16, 15),
+            (13, 16), (14, 16), (15, 16), (16, 16),
+            (12, 17), (13, 17), (14, 17), (15, 17), (16, 17),
+            (11, 18), (12, 18), (13, 18), (14, 18), (15, 18),
+            (11, 19), (12, 19), (13, 19), (14, 19), (15, 19),
+            (11, 20), (12, 20), (13, 20), (14, 20), (15, 20),
+            (11, 21), (12, 21), (13, 21), (14, 21), (15, 21),
+            (12, 22), (13, 22), (14, 22),
+            (12, 23), (13, 23),
+            (12, 24)
+        }, 
+        "locked": True, 
+        "price": 500
+    },
+    "West Coast": {
+        "tiles": {
+            (18, 5),
+            (17, 6), (18, 6), (19, 6),
+            (17, 7), (18, 7), (19, 7),
+            (17, 8), (18, 8), 
+            (16, 9), (17, 9), (18, 9),
+            (15, 10), (16, 10), (17, 10),
+            (14, 11), (15, 11), (16, 11),
+            (13, 12), (14, 12), (15, 12),
+            (11, 13), (12, 13), (13, 13), (14, 13),
+            (10, 14), (11, 14), (12, 14), (13, 14), (14, 14),
+            (9, 15), (10, 15), (11, 15), (12, 15), (13, 15),
+            (10, 16), (11, 16), (12, 16),
+            (10, 17), (11, 17),
+        }, 
+        "locked": True, 
+        "price": 500
+    },
+    "Canterbury": {
+        "tiles": {
+            (19, 8), (20, 8), (21, 8), (22, 8), (23, 8),
+            (19, 9), (20, 9), (21, 9), (22, 9),
+            (18, 10), (19, 10), (20, 10), (21, 10), (22, 10),
+            (17, 11), (18, 11), (19, 11), (20, 11),
+            (16, 12), (17, 12), (18, 12), (19, 12), (20, 12),
+            (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13), (21, 13),
+            (15, 14), (16, 14), (17, 14), (18, 14),
+        }, 
+        "locked": True, 
+        "price": 1000
+    },
+    "Marlborough and Nelson": {
+        "tiles": {
+            (20, 2),
+            (19, 3), (20, 3), (21, 3), (24, 3),
+            (19, 4), (20, 4), (21, 4), (22, 4), (23, 4), (24, 4),
+            (19, 5), (20, 5), (21, 5), (22, 5), (23, 5), (24, 5),
+            (20, 6), (21, 6), (22, 6), (23, 6), (24, 6),
+            (20, 7), (21, 7), (22, 7), (23, 7), (24, 7),
+        }, 
+        "locked": True, 
+        "price": 1200
+    },
+}
 
 # Function to render the research tree GUI
 def render_research_tree():
@@ -144,6 +249,26 @@ def render_research_tree():
     text("Research Tree", 48, (255, 255, 255), (screen_width // 2 - 150, 50))
     back_button_rect = text("< Back", 30, (255, 255, 255), (screen_width - 1100, 45), True, (100, 40), (100, 100, 100))
     text("Research Points: " + str(research), 24, (255, 255, 255), (20, 150))
+
+# Function to render locked tiles with a grey overlay
+def render_locked_tiles(surface, offset_x, offset_y, zoom):
+    tile_width = int(tilemap.tilewidth * zoom)
+    tile_height = int(tilemap.tileheight * zoom)
+
+    for region_name, region_data in locked_tiles.items():
+        if region_data["locked"]:  # Only render locked tiles for locked regions
+            # Calculate the center tile for the region
+            center_tile = list(region_data["tiles"])[len(region_data["tiles"]) // 2]
+            for grid_x, grid_y in region_data["tiles"]:
+                tile_x = grid_x * tile_width + offset_x
+                tile_y = grid_y * tile_height + offset_y
+                grey_overlay = pygame.Surface((tile_width, tile_height), pygame.SRCALPHA)
+                grey_overlay.fill((50, 50, 50, 150))  # Semi-transparent grey
+                surface.blit(grey_overlay, (tile_x, tile_y))
+
+                # Display the region name only on the center tile
+                if (grid_x, grid_y) == center_tile:
+                    text(f"{region_name}", 14, (255, 255, 255), (tile_x + 5, tile_y + 5))
 
 # Function to render the tilemap
 def render_tilemap(surface, tilemap, offset_x, offset_y, zoom):
@@ -159,6 +284,7 @@ def render_tilemap(surface, tilemap, offset_x, offset_y, zoom):
                             tile_height = int(tilemap.tileheight * zoom)
                             scaled_tile = pygame.transform.scale(tile, (tile_width, tile_height))
                             surface.blit(scaled_tile, (x * tile_width + offset_x, y * tile_height + offset_y))
+    render_locked_tiles(surface, offset_x, offset_y, zoom)
 
 # Function to render the grid only on tiles with a specific gid in the tilemap
 def render_grid(surface, tilemap, offset_x, offset_y, zoom, valid_tiles):
@@ -181,7 +307,7 @@ def render_grid(surface, tilemap, offset_x, offset_y, zoom, valid_tiles):
 
                         valid_tiles.add((x, y))
 
-# Function to render placed blocks with hover effect in destroy mode
+# Function to render placed blocks with hover effect in destroy mode and tooltips
 def render_placed_blocks(surface, placed_blocks, offset_x, offset_y, zoom, mouse_pos):
     tile_width = int(tilemap.tilewidth * zoom)
     tile_height = int(tilemap.tileheight * zoom)
@@ -191,12 +317,25 @@ def render_placed_blocks(surface, placed_blocks, offset_x, offset_y, zoom, mouse
         block_y = grid_y * tile_height + offset_y
         scaled_image = pygame.transform.scale(block_image, (tile_width, tile_height))
 
+        # Grey out the block if it's out of ticks
+        building_name = building_mapping.get(block_image)
+        if building_name in power_plant_ticks and placed_power_plant_ticks.get((grid_x, grid_y), 0) <= 0:
+            greyed_out_image = scaled_image.copy()
+            greyed_out_image.fill((128, 128, 128, 150), special_flags=pygame.BLEND_RGBA_MULT)
+            surface.blit(greyed_out_image, (block_x, block_y))
+        else:
+            surface.blit(scaled_image, (block_x, block_y))
+
+        # Render hover effect in destroy mode
         if destroy_mode and block_x <= mouse_pos[0] < block_x + tile_width and block_y <= mouse_pos[1] < block_y + tile_height:
             tinted_image = scaled_image.copy()
             tinted_image.fill((255, 0, 0, 205), special_flags=pygame.BLEND_RGBA_MULT)
             surface.blit(tinted_image, (block_x, block_y))
-        else:
-            surface.blit(scaled_image, (block_x, block_y))
+
+        # Render tooltip if hovering over the block
+        if block_x <= mouse_pos[0] < block_x + tile_width and block_y <= mouse_pos[1] < block_y + tile_height:
+            ticks_left = placed_power_plant_ticks.get((grid_x, grid_y), None)
+            render_tooltip(building_name, (mouse_pos[0] + 15, mouse_pos[1] + 15), ticks_left)
 
 # Function to make text display
 def text(text, size, color, position, button=False, button_size=(0, 0), button_color=(0, 0, 0)):
@@ -231,30 +370,45 @@ def update_max_power():
 
 # Function to update research points based on placed labs
 def update_research():
-    global research, research_pm
+    global research, research_ps
     added_research = 0
     added_research += sum(1 for block_image in placed_blocks.values() if block_image == lab_images[0]) * lab1_research_per_second
     added_research += sum(1 for block_image in placed_blocks.values() if block_image == lab_images[1]) * lab2_research_per_second
     added_research += sum(1 for block_image in placed_blocks.values() if block_image == lab_images[2]) * lab3_research_per_second
     research += added_research
-    research_pm = round(added_research * 60, 2)
+    research_ps = round(added_research, 2)
 
 # Function to update power points based on placed power plants
 def update_power():
-    global power, power_pm
+    global power, power_ps
     added_power = 0
-    added_power += sum(1 for block_image in placed_blocks.values() if block_image == power_plant_images[0]) * wind_turbine_power_per_second
-    added_power += sum(1 for block_image in placed_blocks.values() if block_image == power_plant_images[1]) * solar_panel_power_per_second
-    added_power += sum(1 for block_image in placed_blocks.values() if block_image == power_plant_images[2]) * coal_plant_power_per_second
-    added_power += sum(1 for block_image in placed_blocks.values() if block_image == power_plant_images[3]) * nuclear_plant_power_per_second
-    added_power += sum(1 for block_image in placed_blocks.values() if block_image == power_plant_images[4]) * fusion_plant_power_per_second
+
+    for (grid_x, grid_y), block_image in placed_blocks.items():
+        building_name = building_mapping.get(block_image)
+        if building_name in power_plant_ticks:
+            # Check if the power plant has remaining ticks
+            if placed_power_plant_ticks.get((grid_x, grid_y), 0) > 0:
+                if building_name == "wind_turbine":
+                    added_power += wind_turbine_power_per_second
+                elif building_name == "solar_panel":
+                    added_power += solar_panel_power_per_second
+                elif building_name == "coal_plant":
+                    added_power += coal_plant_power_per_second
+                elif building_name == "nuclear_plant":
+                    added_power += nuclear_plant_power_per_second
+                elif building_name == "fusion_plant":
+                    added_power += fusion_plant_power_per_second
+
+                # Decrease the tick counter
+                placed_power_plant_ticks[(grid_x, grid_y)] -= 1
+
     power += added_power
-    power_pm = round(added_power * 60, 2)
+    power_ps = round(added_power, 2)
     power = min(power, max_power)
 
 # Function to convert power into money based on placed houses
 def update_money():
-    global money, money_pm, power
+    global money, money_ps, power
     required_power = 0
     earned_money = 0
 
@@ -270,65 +424,187 @@ def update_money():
         power = 0
 
     money += earned_money
-    money_pm = round(earned_money * 60, 2)
+    money_ps = round(earned_money, 2)
 
-# Adjust GUI rendering to account for scrolling
+# Function to format building names for tooltips
+def format_building_name(building_name):
+    return building_name.replace("_", " ").title()
+
+# Function to render tooltips
+def render_tooltip(building, position, ticks_left=None, show_cost=False):
+    font = pygame.font.Font(None, 24)
+    lines = []
+
+    formatted_name = format_building_name(building)
+
+    if building in ["lab1", "lab2", "lab3"]:
+        lines.append((f"{formatted_name} - Produces Research", (255, 255, 255)))  # White
+        if show_cost:
+            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  # Green if affordable, red otherwise
+            lines.append((f"Cost: ${building_prices[building]}", cost_color))
+        lines.append((f"Produces: {lab1_research_per_second if building == 'lab1' else lab2_research_per_second if building == 'lab2' else lab3_research_per_second} RP/s", (255, 255, 0)))  # Yellow
+    elif building in ["house1", "house2", "house3"]:
+        lines.append((f"{formatted_name} - Produces Money", (255, 255, 255)))  # White
+        if show_cost:
+            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  # Green if affordable, red otherwise
+            lines.append((f"Cost: ${building_prices[building]}", cost_color))
+        lines.append((f"Converts: {house1_money_per_second if building == 'house1' else house2_money_per_second if building == 'house2' else house3_money_per_second} MW/s", (255, 255, 0)))  # Yellow
+    elif building in ["battery1", "battery2"]:
+        lines.append((f"{formatted_name} - Stores Power", (255, 255, 255)))  # White
+        if show_cost:
+            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  # Green if affordable, red otherwise
+            lines.append((f"Cost: ${building_prices[building]}", cost_color))
+        lines.append((f"Stores: {battery1_power if building == 'battery1' else battery2_power} Power", (255, 255, 0)))  # Yellow
+    elif building in ["coal_plant", "nuclear_plant", "fusion_plant", "wind_turbine", "solar_panel"]:
+        lines.append((f"{formatted_name} - Produces Power", (255, 255, 255)))  # White
+        if ticks_left is not None:
+            if ticks_left <= 0:
+                lines.append((f"Status: Broken", (255, 0, 0)))  # Red
+            else:
+                lines.append((f"Status: Operational", (0, 255, 0)))  # Green
+        if show_cost:  # Show cost in GUI tooltips
+            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  # Green if affordable, red otherwise
+            lines.append((f"Cost: ${building_prices[building]}", cost_color))
+        lines.append((f"Produces: {wind_turbine_power_per_second if building == 'wind_turbine' else solar_panel_power_per_second if building == 'solar_panel' else coal_plant_power_per_second if building == 'coal_plant' else nuclear_plant_power_per_second if building == 'nuclear_plant' else fusion_plant_power_per_second} MW/s", (255, 255, 0)))  # Yellow
+        if ticks_left is not None:
+            if ticks_left <= 0:
+                repair_cost = max(0.75, round(building_prices[building] * 0.75, 2))
+                repair_cost_color = (0, 255, 0) if money >= repair_cost else (255, 0, 0)  # Green if affordable, red otherwise
+                lines.append((f"Repair Cost: ${repair_cost}", repair_cost_color))  # Green or red
+            else:
+                lines.append((f"Ticks Left: {ticks_left} / {power_plant_ticks[building]}", (255, 0, 255)))  # Purple
+        if not show_cost:  # Show destroy cost only in map tooltips
+            destroy_cost = round(building_prices[building] * sell_percentage, 2)
+            lines.append((f"Destroy Refund: ${destroy_cost}", (0, 255, 255)))  # Cyan
+    else:
+        lines.append((f"{formatted_name} - Unknown Building", (255, 255, 255)))  # White
+
+    # Render each line and calculate the tooltip size
+    rendered_lines = [font.render(line[0], True, line[1]) for line in lines]
+    line_height = font.get_linesize() + 5  # Add extra spacing between lines
+    tooltip_width = max(line.get_width() for line in rendered_lines) + 10
+    tooltip_height = len(rendered_lines) * line_height + 10
+
+    # Create a transparent surface for the tooltip background
+    tooltip_surface = pygame.Surface((tooltip_width, tooltip_height), pygame.SRCALPHA)
+    pygame.draw.rect(tooltip_surface, (20, 20, 20, 200), (0, 0, tooltip_width, tooltip_height), border_radius=7)  # Rounded corners
+
+    # Draw the background
+    screen.blit(tooltip_surface, position)
+
+    # Draw each line of text
+    for i, line_surface in enumerate(rendered_lines):
+        screen.blit(line_surface, (position[0] + 5, position[1] + 5 + i * line_height))
+
+# Adjust GUI rendering to include tooltips
 def render_gui():
     pygame.draw.rect(screen, (50, 50, 50), gui_rect)
 
-    global destroy_button_rect
-    global research_button_rect
+    global destroy_button_rect, research_button_rect, sell_power_button_rect, unlock_button_rect
     
-    if money_pm == 0:
-        text(f"Money: ${money}", 28, (255, 255, 255), (20, 20 - gui_scroll_offset))
+    if money_ps == 0:
+        text(f"Money: ${round(money, 2)}", 28, (255, 255, 255), (20, 20 - gui_scroll_offset))
     else:
-        text(f"Money: ${money} + {money_pm}/pm", 28, (255, 255, 255), (20, 20 - gui_scroll_offset))
+        text(f"Money: ${round(money, 2)} + {round(money_ps, 2)}/s", 28, (255, 255, 255), (20, 20 - gui_scroll_offset))
 
-    if power_pm == 0:
-        text(f"Power: {power} MW / {max_power} MW", 28, (255, 255, 255), (20, 60 - gui_scroll_offset))
+    if power_ps == 0:
+        text(f"Power: {round(power, 2)} MW / {max_power} MW", 28, (255, 255, 255), (20, 60 - gui_scroll_offset))
     else:
-        text(f"Power: {power} MW / {max_power} MW + {power_pm}/pm", 28, (255, 255, 255), (20, 60 - gui_scroll_offset))
+        text(f"Power: {round(power, 2)} MW / {max_power} MW + {round(power_ps, 2)}/s", 28, (255, 255, 255), (20, 60 - gui_scroll_offset))
 
-    if research_pm == 0:
-        text(f"Research: {research} RP", 28, (255, 255, 255), (20, 100 - gui_scroll_offset))
+    if research_ps == 0:
+        text(f"Research: {round(research, 2)} RP", 28, (255, 255, 255), (20, 100 - gui_scroll_offset))
     else:
-        text(f"Research: {research} RP + {research_pm}/pm", 28, (255, 255, 255), (20, 100 - gui_scroll_offset))
+        text(f"Research: {round(research, 2)} RP + {round(research_ps, 2)}/s", 28, (255, 255, 255), (20, 100 - gui_scroll_offset))
 
-    if heat_pm == 0:
-        text(f"Heat: {heat} / {max_heat}", 28, (255, 255, 255), (20, 140 - gui_scroll_offset))
+    if heat_ps == 0:
+        text(f"Heat: {round(heat, 2)} / {max_heat}", 28, (255, 255, 255), (20, 140 - gui_scroll_offset))
     else:
-        text(f"Heat: {heat} / {max_heat} + {heat_pm}/pm", 28, (255, 255, 255), (20, 140 - gui_scroll_offset))
+        text(f"Heat: {round(heat, 2)} / {max_heat} + {round(heat_ps, 2)}/s", 28, (255, 255, 255), (20, 140 - gui_scroll_offset))
 
     research_button_rect = text("Research", 24, (255, 255, 255), (20, 180 - gui_scroll_offset), True, (120, 35), (100, 100, 100))
     destroy_button_rect = text("Destroy: ON" if destroy_mode else "Destroy: OFF", 24, (255, 255, 255), (20, 220 - gui_scroll_offset), True, (120, 35), (100, 100, 100))
-    text("Buildings", 30, (255, 255, 255), (20, 280 - gui_scroll_offset))
-    text("- Power plants", 24, (200, 200, 200), (40, 320 - gui_scroll_offset))
-    text("- Labs", 24, (200, 200, 200), (40, 400 - gui_scroll_offset))
-    text("- Houses", 24, (200, 200, 200), (40, 480 - gui_scroll_offset))
-    text("- Batterys", 24, (200, 200, 200), (40, 560 - gui_scroll_offset))
+    sell_power_button_rect = text("Sell Power", 24, (255, 255, 255), (20, 260 - gui_scroll_offset), True, (120, 35), (100, 100, 100))
+    text("Buildings: ", 30, (255, 255, 255), (20, 320 - gui_scroll_offset))
+    text("- Power plants", 24, (200, 200, 200), (40, 360 - gui_scroll_offset))
+    text("- Labs", 24, (200, 200, 200), (40, 440 - gui_scroll_offset))
+    text("- Houses", 24, (200, 200, 200), (40, 520 - gui_scroll_offset))
+    text("- Batterys", 24, (200, 200, 200), (40, 600 - gui_scroll_offset))
 
     global power_plant_buttons, lab_buttons, house_buttons, battery_buttons
 
-    power_plant_buttons = [text("", 24, (255, 255, 255), (60 + i * 50, 340 - gui_scroll_offset), True, (40, 40), (100, 100, 100)) for i in range(5)]
-    lab_buttons = [text("", 24, (255, 255, 255), (60 + i * 50, 420 - gui_scroll_offset), True, (40, 40), (100, 100, 100)) for i in range(3)]
-    house_buttons = [text("", 24, (255, 255, 255), (60 + i * 50, 500 - gui_scroll_offset), True, (40, 40), (100, 100, 100)) for i in range(3)]
-    battery_buttons = [text("", 24, (255, 255, 255), (60 + i * 50, 580 - gui_scroll_offset), True, (40, 40), (100, 100, 100)) for i in range(2)]
+    power_plant_buttons = [text("", 24, (255, 255, 255), (60 + i * 50, 380 - gui_scroll_offset), True, (40, 40), (100, 100, 100)) for i in range(5)]
+    lab_buttons = [text("", 24, (255, 255, 255), (60 + i * 50, 460 - gui_scroll_offset), True, (40, 40), (100, 100, 100)) for i in range(3)]
+    house_buttons = [text("", 24, (255, 255, 255), (60 + i * 50, 540 - gui_scroll_offset), True, (40, 40), (100, 100, 100)) for i in range(3)]
+    battery_buttons = [text("", 24, (255, 255, 255), (60 + i * 50, 620 - gui_scroll_offset), True, (40, 40), (100, 100, 100)) for i in range(2)]
 
     for i, img in enumerate(power_plant_images):
         scaled_img = pygame.transform.scale(img, (30, 30))
-        screen.blit(scaled_img, (60 + i * 50 + 5, 340 + 10 - gui_scroll_offset))
+        screen.blit(scaled_img, (60 + i * 50 + 5, 380 + 10 - gui_scroll_offset))
 
     for i, img in enumerate(lab_images):
         scaled_img = pygame.transform.scale(img, (30, 30))
-        screen.blit(scaled_img, (60 + i * 50 + 5, 420 + 10 - gui_scroll_offset))
+        screen.blit(scaled_img, (60 + i * 50 + 5, 460 + 10 - gui_scroll_offset))
 
     for i, img in enumerate(house_images):
         scaled_img = pygame.transform.scale(img, (30, 30))
-        screen.blit(scaled_img, (60 + i * 50 + 5, 500 + 10 - gui_scroll_offset))
+        screen.blit(scaled_img, (60 + i * 50 + 5, 540 + 10 - gui_scroll_offset))
 
     for i, img in enumerate(battery_images):
         scaled_img = pygame.transform.scale(img, (30, 30))
-        screen.blit(scaled_img, (60 + i * 50 + 5, 580 + 10 - gui_scroll_offset))
+        screen.blit(scaled_img, (60 + i * 50 + 5, 620 + 10 - gui_scroll_offset))
+
+    # Handle tooltips for hovering over buttons
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    button_groups = [
+        (power_plant_buttons, list(building_mapping.values())[:5]),
+        (lab_buttons, list(building_mapping.values())[5:8]),
+        (house_buttons, list(building_mapping.values())[8:11]),
+        (battery_buttons, list(building_mapping.values())[11:]),
+    ]
+
+    for buttons, buildings in button_groups:
+        for i, rect in enumerate(buttons):
+            if rect.collidepoint(mouse_x, mouse_y):
+                render_tooltip(buildings[i], (mouse_x + 15, mouse_y), show_cost=True)  # Show cost in GUI tooltips
+                break
+
+# Handle block restoration when clicking on a broken building
+def handle_repair(grid_x, grid_y):
+    if destroy_mode:
+        # Do not allow repairs when destroy mode is active
+        return
+
+    if (grid_x, grid_y) in placed_blocks:
+        block_image = placed_blocks[(grid_x, grid_y)]
+        building_name = building_mapping.get(block_image)
+
+        # Check if the building is broken and restore it
+        if building_name in power_plant_ticks and placed_power_plant_ticks.get((grid_x, grid_y), 0) <= 0:
+            repair_cost = max(0.75, round(building_prices[building_name] * 0.75, 2))  # Correctly calculate repair cost
+            global money
+            if money >= repair_cost:
+                money -= repair_cost
+                placed_power_plant_ticks[(grid_x, grid_y)] = power_plant_ticks[building_name]
+
+# Function to unlock a region
+def unlock_region(region_name):
+    global money
+    if region_name in locked_tiles and locked_tiles[region_name]["locked"]:
+        price = locked_tiles[region_name]["price"]
+        if money >= price:
+            money -= price
+            locked_tiles[region_name]["locked"] = False
+            print(f"Unlocked {region_name} for ${price}.")
+        else:
+            print("Not enough money to unlock this region!")
+
+# Function to check if a tile is locked
+def is_tile_locked(grid_x, grid_y):
+    for region_name, region_data in locked_tiles.items():
+        if region_data["locked"] and (grid_x, grid_y) in region_data["tiles"]:
+            return True
+    return False
 
 # Main game loop
 running = True
@@ -399,10 +675,17 @@ while running:
             if research_button_rect and research_button_rect.collidepoint((mouse_x, mouse_y)):
                 # Toggle research tree visibility
                 research_tree_open = not research_tree_open
-            
-            if back_button_rect and back_button_rect.collidepoint((mouse_x, mouse_y)):
-                # Close the research tree
-                research_tree_open = False
+
+                render_research_tree()
+                if back_button_rect and back_button_rect.collidepoint((mouse_x, mouse_y)):
+                    # Close the research tree
+                    research_tree_open = False
+
+            if research_tree_open:
+                render_research_tree()
+                if back_button_rect and back_button_rect.collidepoint((mouse_x, mouse_y)):
+                    # Close the research tree
+                    research_tree_open = False
 
             elif gui_rect.collidepoint(mouse_x, mouse_y):
                 # Handle GUI button clicks
@@ -450,8 +733,35 @@ while running:
                             show_grid = True
                             destroy_mode = False
 
-            elif show_grid and destroy_mode:
-                # Handle block destruction in destroy mode
+            if sell_power_button_rect and sell_power_button_rect.collidepoint((mouse_x, mouse_y)):
+                # Sell all power and convert it into money
+                money += power
+                power = 0
+
+            # Handle unlocking regions directly on the map
+            for region_name, region_data in locked_tiles.items():
+                if region_data["locked"]:
+                    for grid_x, grid_y in region_data["tiles"]:
+                        tile_width = int(tilemap.tilewidth * zoom)
+                        tile_height = int(tilemap.tileheight * zoom)
+                        tile_rect = pygame.Rect(
+                            grid_x * tile_width + gui_width + camera_x,
+                            grid_y * tile_height + camera_y,
+                            tile_width,
+                            tile_height,
+                        )
+                        if tile_rect.collidepoint(mouse_x, mouse_y):
+                            unlock_region(region_name)
+                            break
+
+            # Handle repairing buildings regardless of build mode
+            if not destroy_mode:
+                grid_x = int((mouse_x - gui_width - camera_x) // int(tilemap.tilewidth * zoom))
+                grid_y = int((mouse_y - camera_y) // int(tilemap.tileheight * zoom))
+                handle_repair(grid_x, grid_y)
+
+            # Handle block destruction in destroy mode
+            if show_grid and destroy_mode:
                 grid_x = int((mouse_x - gui_width - camera_x) // int(tilemap.tilewidth * zoom))
                 grid_y = int((mouse_y - camera_y) // int(tilemap.tileheight * zoom))
 
@@ -461,24 +771,48 @@ while running:
                             block_image = placed_blocks[(grid_x, grid_y)]
                             building_name = building_mapping[block_image]
                             building_cost = building_prices[building_name]
-                            money += building_cost
+
+                            # Calculate the refund based on sell_percentage
+                            refund = round(building_cost * sell_percentage, 2)
+                            money += refund
+
+                            # Remove the block and update max power
                             del placed_blocks[(grid_x, grid_y)]
                             update_max_power()
 
             elif show_grid and not destroy_mode:
-                # Handle block placement
+                # Handle block placement and restoration
                 grid_x = int((mouse_x - gui_width - camera_x) // int(tilemap.tilewidth * zoom))
                 grid_y = int((mouse_y - camera_y) // int(tilemap.tileheight * zoom))
 
-                if (grid_x, grid_y) in valid_tiles and (grid_x, grid_y) not in placed_blocks and can_place_building(grid_x, grid_y):
-                    if event.button == 1 and selected_building:
-                        building_name = building_mapping[selected_building]
-                        building_cost = building_prices[building_name]
+                if (grid_x, grid_y) in placed_blocks:
+                    block_image = placed_blocks[(grid_x, grid_y)]
+                    building_name = building_mapping.get(block_image)
 
-                        if money >= building_cost:
-                            money -= building_cost
-                            placed_blocks[(grid_x, grid_y)] = selected_building
-                            update_max_power()
+                    # Check if the building is broken and restore it
+                    if building_name in power_plant_ticks and placed_power_plant_ticks.get((grid_x, grid_y), 0) <= 0:
+                        repair_cost = max(1, int(building_prices[building_name] * 0.75))  # Ensure repair cost is at least 1
+                        if money >= repair_cost:
+                            money -= repair_cost
+                            placed_power_plant_ticks[(grid_x, grid_y)] = power_plant_ticks[building_name]
+
+                elif (grid_x, grid_y) in valid_tiles and (grid_x, grid_y) not in placed_blocks and can_place_building(grid_x, grid_y):
+                    if is_tile_locked(grid_x, grid_y):
+                        print("This tile is locked behind a region. Unlock the region to build here.")
+                    else:
+                        if event.button == 1 and selected_building:
+                            building_name = building_mapping[selected_building]
+                            building_cost = building_prices[building_name]
+
+                            if money >= building_cost:
+                                money -= building_cost
+                                placed_blocks[(grid_x, grid_y)] = selected_building
+
+                                # Initialize tick counter for power plants
+                                if building_name in power_plant_ticks:
+                                    placed_power_plant_ticks[(grid_x, grid_y)] = power_plant_ticks[building_name]
+
+                                update_max_power()
 
             if event.button == 3:
                 # Start dragging the map

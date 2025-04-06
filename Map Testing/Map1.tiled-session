@@ -3,20 +3,33 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Map1/Assets_resized.tsx",
+    "activeFile": "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/terrain_map.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "": {
+            "scaleInEditor": 1
+        },
         "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/forestTileset.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1
         },
+        "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/terrain_map.tmx": {
+            "scale": 0.4532291666666667,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 971.9145024132383,
+                "y": 960.882555734314
+            }
+        },
         "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/terrain_map.tmx#Terrain": {
-            "dynamicWrapping": true
+            "dynamicWrapping": true,
+            "scaleInDock": 1
         },
         "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/terrain_tileset.tsx": {
             "dynamicWrapping": true,
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "Map1/3.tsx": {
@@ -76,18 +89,15 @@
     "map.tileHeight": 64,
     "map.tileWidth": 64,
     "openFiles": [
-        "Map1/Map.tmx",
         "Map1/forestTileset.tsx",
-        "Map1/Tileset.tsx",
-        "Map1/Assets2.tsx",
-        "Map1/Assets.tsx",
-        "Map1/Assets_resized.tsx"
+        "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/terrain_map.tmx"
     ],
     "project": "Map1.tiled-project",
     "recentFiles": [
+        "Map1/forestTileset.tsx",
+        "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/terrain_map.tmx",
         "C:/Users/Owner/OneDrive - Kaiapoi High School/Documents/Coding/My School Coding/Yr 12/2.7 Assessment/Game/terrain_tileset.tsx",
         "Map1/Map.tmx",
-        "Map1/forestTileset.tsx",
         "Map1/Tileset.tsx",
         "Map1/Assets2.tsx",
         "Map1/Assets.tsx",
