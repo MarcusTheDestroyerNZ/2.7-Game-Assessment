@@ -13,11 +13,11 @@ screen = pygame.display.set_mode((screen_width, screen_height), pygame.RESIZABLE
 pygame.display.set_caption("Sustainable Energy Game")
 
 info = pygame.display.Info()
-screen_width = info.current_w
-screen_height = info.current_h
+new_screen_width = info.current_w
+new_screen_height = info.current_h
 
-gui_width = screen_width * 0.3
-gui_rect = pygame.Rect(0, 0, gui_width, screen_height)
+gui_width = new_screen_width * 0.3
+gui_rect = pygame.Rect(0, 0, gui_width, new_screen_height)
 
 tilemap = load_pygame("terrain_map.tmx")
 
@@ -266,7 +266,7 @@ research_upgrades = [
         "name": "Unlock Research Lab 1",
         "cost": 250,  
         "currency": "money",  
-        "effect": lambda: Unlock_research_lab_1(),
+        "effect": lambda: unlock_research_lab_1(),
         "purchased": False
     },
     {
@@ -274,6 +274,48 @@ research_upgrades = [
         "cost": 100,  
         "currency": "research",  
         "effect": lambda: automaticly_repair_wind_turbines(),
+        "purchased": False
+    },
+    {
+        "name": "Unlock House 1",
+        "cost": 250,  
+        "currency": "research",  
+        "effect": lambda: unlock_house_1(),
+        "purchased": False
+    },
+    {
+        "name": "Unlock House 2",
+        "cost": 1000,
+        "currency": "research",
+        "effect": lambda: unlock_house_2(),
+        "purchased": False
+    },
+    {
+        "name": "Unlock House 3",
+        "cost": 5000,
+        "currency": "research",
+        "effect": lambda: unlock_house_3(),
+        "purchased": False
+    },
+    {
+        "name": "Unlock Solar Panels",
+        "cost": 1000,  
+        "currency": "research",  
+        "effect": lambda: unlock_solar_panels(),
+        "purchased": False
+    },
+    {
+        "name": "Double Solar Panel Ticks",
+        "cost": 5000,  
+        "currency": "research",  
+        "effect": lambda: double_solar_panel_ticks(),
+        "purchased": False
+    },
+    {
+        "name": "Double Solar Panel Efficiency",
+        "cost": 10000,
+        "currency": "research",
+        "effect": lambda: double_solar_panel_efficiency(),
         "purchased": False
     }
 ]
@@ -288,7 +330,8 @@ def double_wind_turbine_efficiency():
     global wind_turbine_power_per_second
     wind_turbine_power_per_second *= 2
 
-def Unlock_research_lab_1():
+# Function to unlock research lab 1
+def unlock_research_lab_1():
     global Unlock_lab_1
     Unlock_lab_1 = True
 
@@ -297,12 +340,42 @@ def automaticly_repair_wind_turbines():
     global auto_repair_wind_turbines
     auto_repair_wind_turbines = True
 
+# Function to unlock house 1
+def unlock_house_1():
+    global Unlock_house_1
+    Unlock_house_1 = True
+
+# Function to unlock solar panels
+def unlock_solar_panels():
+    global Unlock_solar_panels
+    Unlock_solar_panels = True
+
+# Function to double solar panel ticks
+def double_solar_panel_ticks():
+    global power_plant_ticks
+    power_plant_ticks["solar_panel"] *= 2
+
+# Function to double solar panel efficiency
+def double_solar_panel_efficiency():
+    global solar_panel_power_per_second
+    solar_panel_power_per_second *= 2
+
+# Function to unlock house 2
+def unlock_house_2():
+    global Unlock_house_2
+    Unlock_house_2 = True
+
+# Function to unlock house 3
+def unlock_house_3():
+    global Unlock_house_3
+    Unlock_house_3 = True
+
 # Variables for research tree movement and zoom
 research_tree_offset_x = 0
-research_tree_offset_y = 0
+research_tree_offset_y = new_screen_height / 2
 research_tree_dragging = False
 last_research_mouse_pos = None
-research_tree_zoom = 1.0
+research_tree_zoom = 0.5
 research_tree_zoom_step = 0.1
 min_research_tree_zoom = 0.5
 max_research_tree_zoom = 2.0
@@ -313,54 +386,71 @@ def render_research_tree():
     screen.fill((50, 50, 50))
 
     # Draw a fixed background for the title, back button, and resource displays
-    header_rect = pygame.Rect(0, 0, screen_width, 200)
+    header_rect = pygame.Rect(0, 0, new_screen_width, 200)
     pygame.draw.rect(screen, (30, 30, 30), header_rect)
 
     # Render title, back button, and resource displays
-    text("Research Tree", 48, (255, 255, 255), (screen_width // 2 - 150, 50))
-    back_button_rect = text("< Back", 30, (255, 255, 255), (screen_width - 1100, 45), True, (100, 40), (100, 100, 100))
+    text("Research Tree", 48, (255, 255, 255), (new_screen_width // 2 - 150, 50))
+    back_button_rect = text("< Back", 30, (255, 255, 255), (new_screen_width - 1100, 45), True, (100, 40), (100, 100, 100))
     text(f"Research Points: {research}", 24, (255, 255, 255), (20, 150))
     text(f"Money: ${money}", 24, (255, 255, 255), (20, 180))
 
-    # Define research tree layout with multiple upgrades per tier
+    # Define the new research tree layout
     tree_layout = [
-        # Tier 1
+        # 1st node row
         [
-            {"name": "Double Wind Turbine Ticks", "x": 150, "y": 300, "image": power_plant_images[0]},
-            {"name": "Double Solar Panel Efficiency", "x": 400, "y": 300, "image": power_plant_images[1]},
+            {"name": "Double Wind Turbine Ticks", "x": 100, "y": 400, "image": power_plant_images[0], "unlocks": ["Unlock Research Lab 1", "Double Wind Turbine Efficiency"]},
         ],
-        # Tier 2
+        # 2nd node row
         [
-            {"name": "Unlock Research Lab 1", "x": 150, "y": 500, "image": lab_images[0]},
-            {"name": "Unlock Research Lab 2", "x": 400, "y": 500, "image": lab_images[1]},
+            {"name": "Unlock Research Lab 1", "x": 500, "y": 300, "image": lab_images[0], "unlocks": ["Unlock Solar Panels", "Unlock House 1"]},
+            {"name": "Double Wind Turbine Efficiency", "x": 500, "y": 500, "image": power_plant_images[0], "unlocks": ["Automaticly repair Wind Turbines"]},
         ],
-        # Tier 3
+        # 3rd node row
         [
-            {"name": "Automatically Repair Wind Turbines", "x": 150, "y": 700, "image": power_plant_images[0]},
-            {"name": "Increase Coal Plant Efficiency", "x": 400, "y": 700, "image": power_plant_images[2]},
+            {"name": "Unlock Solar Panels", "x": 1000, "y": 200, "image": power_plant_images[1], "unlocks": ["Double Solar Panel Ticks", "Double Solar Panel Efficiency"]},
+            {"name": "Unlock House 1", "x": 1000, "y": 400, "image": house_images[0], "unlocks": ["Unlock House 2"]},
+            {"name": "Automaticly repair Wind Turbines", "x": 1000, "y": 600, "image": power_plant_images[0], "unlocks": []},
         ],
+        # 4th node row
+        [
+            {"name": "Double Solar Panel Ticks", "x": 1500, "y": 0, "image": power_plant_images[1], "unlocks": []},
+            {"name": "Double Solar Panel Efficiency", "x": 1500, "y": 200, "image": power_plant_images[1], "unlocks": []},
+            {"name": "Unlock House 2", "x": 1500, "y": 400, "image": house_images[1], "unlocks": ["Unlock House 3"]},
+        ],
+        # 5th node row
+        [
+            {"name": "Unlock House 3", "x": 2000, "y": 400, "image": house_images[2], "unlocks": []},
+        ],
+
+
     ]
 
     # Draw connections between nodes
-    for i in range(len(tree_layout) - 1):
+    for i in range(len(tree_layout)):
         for node in tree_layout[i]:
-            for next_node in tree_layout[i + 1]:
-                # Ensure connections are drawn correctly between nodes
-                pygame.draw.line(
-                    screen,
-                    (0, 255, 0),
-                    (
-                        node["x"] * research_tree_zoom + 50 + research_tree_offset_x,
-                        node["y"] * research_tree_zoom + 50 + research_tree_offset_y,
-                    ),
-                    (
-                        next_node["x"] * research_tree_zoom + 50 + research_tree_offset_x,
-                        next_node["y"] * research_tree_zoom + 50 + research_tree_offset_y,
-                    ),
-                    3,
-                )
+            for unlock_name in node["unlocks"]:
+                # Find the target node in subsequent rows
+                for j in range(i + 1, len(tree_layout)):
+                    for next_node in tree_layout[j]:
+                        if next_node["name"] == unlock_name:
+                            # Calculate the start and end points of the line
+                            start_x = node["x"] * research_tree_zoom + research_tree_offset_x + (300 * research_tree_zoom)  # right side of the left node
+                            start_y = node["y"] * research_tree_zoom + research_tree_offset_y + (100 * research_tree_zoom) / 2  # Middle of the left node
 
-    # Draw research nodes with images
+                            end_x = next_node["x"] * research_tree_zoom + research_tree_offset_x  # left side of the right node
+                            end_y = next_node["y"] * research_tree_zoom + research_tree_offset_y + (100 * research_tree_zoom) / 2  # Middle of the right node
+
+                            # Draw the line
+                            pygame.draw.line(
+                                screen,
+                                (0, 255, 0),
+                                (start_x, start_y),
+                                (end_x, end_y),
+                                3,
+                            )
+
+    # Draw research nodes with images, names, and prices
     for tier in tree_layout:
         for node in tier:
             upgrade = next((u for u in research_upgrades if u["name"] == node["name"]), None)
@@ -370,12 +460,12 @@ def render_research_tree():
                 node["button_rect"] = pygame.Rect(
                     node["x"] * research_tree_zoom + research_tree_offset_x,
                     node["y"] * research_tree_zoom + research_tree_offset_y,
-                    100 * research_tree_zoom,
-                    100 * research_tree_zoom,
+                    300 * research_tree_zoom,  # Width of the button
+                    100 * research_tree_zoom,  # Height of the button
                 )
                 pygame.draw.rect(screen, button_color, node["button_rect"])
 
-                # Draw the corresponding image
+                # Draw the corresponding image on the left
                 if "image" in node:
                     scaled_image = pygame.transform.scale(
                         node["image"], (int(80 * research_tree_zoom), int(80 * research_tree_zoom))
@@ -388,14 +478,24 @@ def render_research_tree():
                         ),
                     )
 
-                # Display cost below the button
+                # Display the name and cost on the right
                 text(
-                    f"Cost: {upgrade['cost']} {'$' if upgrade['currency'] == 'money' else 'RP'}",
-                    int(20 * research_tree_zoom),
+                    node["name"],
+                    int(20 * research_tree_zoom),  # Scale the font size with zoom
                     (255, 255, 255),
                     (
-                        node["x"] * research_tree_zoom + research_tree_offset_x,
-                        node["y"] * research_tree_zoom + 110 * research_tree_zoom + research_tree_offset_y,
+                        node["x"] * research_tree_zoom + 100 * research_tree_zoom + research_tree_offset_x,  # Adjust position with zoom
+                        node["y"] * research_tree_zoom + 20 * research_tree_zoom + research_tree_offset_y,  # Adjust position with zoom
+                    ),
+                )
+
+                text(
+                    f"Cost: {'$' if upgrade['currency'] == "money" else ''} {upgrade['cost']} {'RP' if upgrade['currency'] == "research" else ''}",
+                    int(20 * research_tree_zoom),  # Scale the font size with zoom
+                    (255, 255, 255),
+                    (
+                        node["x"] * research_tree_zoom + 100 * research_tree_zoom + research_tree_offset_x,  # Adjust position with zoom
+                        node["y"] * research_tree_zoom + 60 * research_tree_zoom + research_tree_offset_y,  # Adjust position with zoom
                     ),
                 )
             else:
@@ -889,13 +989,13 @@ while running:
     # Check for screen resizing and adjust dimensions
     info = pygame.display.Info()
 
-    if screen_width != info.current_w or screen_height != info.current_h:
+    if new_screen_width != info.current_w or new_screen_height != info.current_h:
         
-        screen_width = info.current_w
-        screen_height = info.current_h
+        new_screen_width = info.current_w
+        new_screen_height = info.current_h
 
-        gui_width = screen_width * 0.3
-        gui_rect = pygame.Rect(0, 0, gui_width, screen_height)
+        gui_width = new_screen_width * 0.3
+        gui_rect = pygame.Rect(0, 0, gui_width, new_screen_height)
 
     # Clear the screen with a background color
     screen.fill((92, 105, 160))
