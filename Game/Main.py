@@ -7,7 +7,7 @@ pygame.init()
 
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 screen_width = 1200
-screen_height = 800
+screen_height = 600
 
 screen = pygame.display.set_mode((screen_width, screen_height), pygame.RESIZABLE)
 pygame.display.set_caption("Sustainable Energy Game")
@@ -49,12 +49,12 @@ battery_images = [
 building_prices = {
     "wind_turbine": 1,
     "solar_panel": 200,
-    "coal_plant": 10000,
-    "nuclear_plant": 100000,
-    "fusion_plant": 10000000,
+    "coal_plant": 3500,
+    "nuclear_plant": 25000,
+    "fusion_plant": 250000,
     "lab1": 100,
-    "lab2": 5000,
-    "lab3": 50000,
+    "lab2": 1000,
+    "lab3": 35000,
     "house1": 50,
     "house2": 500,
     "house3": 10000,
@@ -101,33 +101,33 @@ selected_building = None
 destroy_mode = False
 
 global money, money_ps, power, max_power, power_ps, research, research_ps, heat, max_heat, heat_pm
-money = 1
+money = 1000000000
 money_ps = 0
 power = 0
 max_power = 50
 power_ps = 0
 research = 0
 research_ps = 0
-heat = 0
-max_heat = 0
-heat_ps = 0
+pollution = 0
+max_pollution = 1000
+pollution_ps = 0
 
-battery1_power = 50
+battery1_power = 100
 battery2_power = 500
 
 lab1_research_per_second = 1
-lab2_research_per_second = 10
+lab2_research_per_second = 25
 lab3_research_per_second = 100
 
 wind_turbine_power_per_second = 0.15
 solar_panel_power_per_second = 3
-coal_plant_power_per_second = 300
+coal_plant_power_per_second = 200
 nuclear_plant_power_per_second = 500
 fusion_plant_power_per_second = 10000
 
 house1_money_per_second = 5
-house2_money_per_second = 25
-house3_money_per_second = 100
+house2_money_per_second = 250
+house3_money_per_second = 5000
 
 game_clock = pygame.time.Clock()
 tick_interval = 1000
@@ -144,7 +144,7 @@ sell_power_button_rect = None
 power_plant_ticks = {
     "wind_turbine": 10,
     "solar_panel": 100,
-    "coal_plant": 400,
+    "coal_plant": 300,
     "nuclear_plant": 800,
     "fusion_plant": 1200
 }
@@ -152,8 +152,12 @@ power_plant_ticks = {
 # Track remaining ticks for each placed power plant
 placed_power_plant_ticks = {}
 
+# Initialize the auto-repair flag
+auto_repair_wind_turbines = False
+
 # Percentage of the building cost returned when selling
-sell_percentage = 0.75  # Change this value to adjust the refund percentage (e.g., 0.5 = 50%)
+sell_percentage = 0.5
+repair_cost_percentage = 0.25
 
 # Define locked tiles for each region (manually assign tiles here)
 locked_tiles = {
@@ -194,7 +198,7 @@ locked_tiles = {
             (12, 24)
         }, 
         "locked": True, 
-        "price": 500
+        "price": 1000
     },
     "West Coast": {
         "tiles": {
@@ -213,7 +217,7 @@ locked_tiles = {
             (10, 17), (11, 17),
         }, 
         "locked": True, 
-        "price": 1000
+        "price": 5000
     },
     "Canterbury": {
         "tiles": {
@@ -226,7 +230,7 @@ locked_tiles = {
             (15, 14), (16, 14), (17, 14), (18, 14),
         }, 
         "locked": True, 
-        "price": 1500
+        "price": 15000
     },
     "Marlborough and Nelson": {
         "tiles": {
@@ -238,7 +242,7 @@ locked_tiles = {
             (20, 7), (21, 7), (22, 7), (23, 7), (24, 7),
         }, 
         "locked": True, 
-        "price": 500
+        "price": 7500
     },
 }
 
@@ -246,22 +250,29 @@ locked_tiles = {
 research_upgrades = [
     {
         "name": "Double Wind Turbine Ticks",
-        "cost": 15,  # Cost in money
-        "currency": "money",  # Specify the currency type
+        "cost": 15,  
+        "currency": "money",  
         "effect": lambda: double_wind_turbine_ticks(),
         "purchased": False
     },
     {
         "name": "Double Wind Turbine Efficiency",
-        "cost": 50,  # Cost in research points
-        "currency": "research",  # Specify the currency type
+        "cost": 50,  
+        "currency": "research",  
         "effect": lambda: double_wind_turbine_efficiency(),
         "purchased": False
     },
     {
+        "name": "Unlock Research Lab 1",
+        "cost": 250,  
+        "currency": "money",  
+        "effect": lambda: Unlock_research_lab_1(),
+        "purchased": False
+    },
+    {
         "name": "Automaticly repair Wind Turbines",
-        "cost": 100,  # Cost in research points
-        "currency": "research",  # Specify the currency type
+        "cost": 100,  
+        "currency": "research",  
         "effect": lambda: automaticly_repair_wind_turbines(),
         "purchased": False
     }
@@ -277,54 +288,122 @@ def double_wind_turbine_efficiency():
     global wind_turbine_power_per_second
     wind_turbine_power_per_second *= 2
 
+def Unlock_research_lab_1():
+    global Unlock_lab_1
+    Unlock_lab_1 = True
+
 # Function to automatically repair wind turbines
 def automaticly_repair_wind_turbines():
     global auto_repair_wind_turbines
     auto_repair_wind_turbines = True
 
-# Initialize the auto-repair flag
-auto_repair_wind_turbines = False
+# Variables for research tree movement and zoom
+research_tree_offset_x = 0
+research_tree_offset_y = 0
+research_tree_dragging = False
+last_research_mouse_pos = None
+research_tree_zoom = 1.0
+research_tree_zoom_step = 0.1
+min_research_tree_zoom = 0.5
+max_research_tree_zoom = 2.0
 
 # Function to render the research tree GUI
 def render_research_tree():
     global back_button_rect
     screen.fill((50, 50, 50))
+
+    # Draw a fixed background for the title, back button, and resource displays
+    header_rect = pygame.Rect(0, 0, screen_width, 200)
+    pygame.draw.rect(screen, (30, 30, 30), header_rect)
+
+    # Render title, back button, and resource displays
     text("Research Tree", 48, (255, 255, 255), (screen_width // 2 - 150, 50))
     back_button_rect = text("< Back", 30, (255, 255, 255), (screen_width - 1100, 45), True, (100, 40), (100, 100, 100))
     text(f"Research Points: {research}", 24, (255, 255, 255), (20, 150))
     text(f"Money: ${money}", 24, (255, 255, 255), (20, 180))
 
-    y_offset = 220
-    for i, upgrade in enumerate(research_upgrades):
-        if i == 0 or research_upgrades[i - 1]["purchased"]:  # Only show if previous upgrade is purchased
-            if upgrade["currency"] == "money":
-                affordable = money >= upgrade["cost"]
-            else:  # "research"
-                affordable = research >= upgrade["cost"]
+    # Define research tree layout with multiple upgrades per tier
+    tree_layout = [
+        # Tier 1
+        [
+            {"name": "Double Wind Turbine Ticks", "x": 150, "y": 300, "image": power_plant_images[0]},
+            {"name": "Double Solar Panel Efficiency", "x": 400, "y": 300, "image": power_plant_images[1]},
+        ],
+        # Tier 2
+        [
+            {"name": "Unlock Research Lab 1", "x": 150, "y": 500, "image": lab_images[0]},
+            {"name": "Unlock Research Lab 2", "x": 400, "y": 500, "image": lab_images[1]},
+        ],
+        # Tier 3
+        [
+            {"name": "Automatically Repair Wind Turbines", "x": 150, "y": 700, "image": power_plant_images[0]},
+            {"name": "Increase Coal Plant Efficiency", "x": 400, "y": 700, "image": power_plant_images[2]},
+        ],
+    ]
 
-            button_color = (0, 255, 0) if affordable and not upgrade["purchased"] else (100, 100, 100)
-            upgrade["button_rect"] = text(
-                f"{upgrade['name']} - Cost: {upgrade['cost']} {'$' if upgrade['currency'] == 'money' else 'RP'}",
-                24,
-                (255, 255, 255),
-                (20, y_offset),
-                True,
-                (400, 35),
-                button_color
-            )
-        else:
-            upgrade["button_rect"] = None  # Ensure no lingering rect for locked upgrades
-            text(
-                f"{upgrade['name']} - Locked",
-                24,
-                (255, 0, 0),
-                (20, y_offset)
-            )
-        y_offset += 50
+    # Draw connections between nodes
+    for i in range(len(tree_layout) - 1):
+        for node in tree_layout[i]:
+            for next_node in tree_layout[i + 1]:
+                # Ensure connections are drawn correctly between nodes
+                pygame.draw.line(
+                    screen,
+                    (0, 255, 0),
+                    (
+                        node["x"] * research_tree_zoom + 50 + research_tree_offset_x,
+                        node["y"] * research_tree_zoom + 50 + research_tree_offset_y,
+                    ),
+                    (
+                        next_node["x"] * research_tree_zoom + 50 + research_tree_offset_x,
+                        next_node["y"] * research_tree_zoom + 50 + research_tree_offset_y,
+                    ),
+                    3,
+                )
+
+    # Draw research nodes with images
+    for tier in tree_layout:
+        for node in tier:
+            upgrade = next((u for u in research_upgrades if u["name"] == node["name"]), None)
+            if upgrade:
+                affordable = (money >= upgrade["cost"] if upgrade["currency"] == "money" else research >= upgrade["cost"])
+                button_color = (0, 255, 0) if affordable and not upgrade["purchased"] else (100, 100, 100)
+                node["button_rect"] = pygame.Rect(
+                    node["x"] * research_tree_zoom + research_tree_offset_x,
+                    node["y"] * research_tree_zoom + research_tree_offset_y,
+                    100 * research_tree_zoom,
+                    100 * research_tree_zoom,
+                )
+                pygame.draw.rect(screen, button_color, node["button_rect"])
+
+                # Draw the corresponding image
+                if "image" in node:
+                    scaled_image = pygame.transform.scale(
+                        node["image"], (int(80 * research_tree_zoom), int(80 * research_tree_zoom))
+                    )
+                    screen.blit(
+                        scaled_image,
+                        (
+                            node["x"] * research_tree_zoom + 10 + research_tree_offset_x,
+                            node["y"] * research_tree_zoom + 10 + research_tree_offset_y,
+                        ),
+                    )
+
+                # Display cost below the button
+                text(
+                    f"Cost: {upgrade['cost']} {'$' if upgrade['currency'] == 'money' else 'RP'}",
+                    int(20 * research_tree_zoom),
+                    (255, 255, 255),
+                    (
+                        node["x"] * research_tree_zoom + research_tree_offset_x,
+                        node["y"] * research_tree_zoom + 110 * research_tree_zoom + research_tree_offset_y,
+                    ),
+                )
+            else:
+                node["button_rect"] = None
 
 # Function to handle research tree interactions
 def handle_research_tree_click(mouse_pos):
-    global research, money, research_tree_open
+    global research, money, research_tree_open, research_tree_dragging, last_research_mouse_pos
     for upgrade in research_upgrades:
         if upgrade.get("button_rect") and upgrade["button_rect"].collidepoint(mouse_pos):
             if not upgrade["purchased"]:
@@ -342,17 +421,57 @@ def handle_research_tree_click(mouse_pos):
     if back_button_rect and back_button_rect.collidepoint(mouse_pos):
         research_tree_open = False
 
+    # Start dragging the research tree
+    if not research_tree_dragging:
+        research_tree_dragging = True
+        last_research_mouse_pos = mouse_pos
+
+# Function to handle research tree dragging
+def handle_research_tree_drag(mouse_pos):
+    global research_tree_offset_x, research_tree_offset_y, last_research_mouse_pos
+    if research_tree_dragging and last_research_mouse_pos:
+        dx = mouse_pos[0] - last_research_mouse_pos[0]
+        dy = mouse_pos[1] - last_research_mouse_pos[1]
+        research_tree_offset_x += dx
+        research_tree_offset_y += dy
+        last_research_mouse_pos = mouse_pos
+
+# Function to stop dragging the research tree
+def stop_research_tree_drag():
+    global research_tree_dragging, last_research_mouse_pos
+    research_tree_dragging = False
+    last_research_mouse_pos = None
+
+# Function to handle research tree zooming
+def handle_research_tree_zoom(event):
+    global research_tree_zoom, research_tree_offset_x, research_tree_offset_y
+    if event.y > 0:
+        new_zoom = min(research_tree_zoom + research_tree_zoom_step, max_research_tree_zoom)
+    elif event.y < 0:
+        new_zoom = max(research_tree_zoom - research_tree_zoom_step, min_research_tree_zoom)
+    else:
+        return
+
+    # Adjust offsets to zoom around the mouse position
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    offset_x = (mouse_x - research_tree_offset_x) / research_tree_zoom
+    offset_y = (mouse_y - research_tree_offset_y) / research_tree_zoom
+    research_tree_offset_x -= int(offset_x * (new_zoom - research_tree_zoom))
+    research_tree_offset_y -= int(offset_y * (new_zoom - research_tree_zoom))
+    research_tree_zoom = new_zoom
+
 # Function to render locked tiles with a grey overlay and tooltips
 def render_locked_tiles_with_tooltips(surface, offset_x, offset_y, zoom, mouse_pos):
+    tooltip_data = None  # Store tooltip data to render it last
+
     if destroy_mode or selected_building:  # Disable tooltips and purchasing in build or destroy mode
         for region_name, region_data in locked_tiles.items():
             if region_data["locked"]:
-                # Highlight locked tiles without tooltips
                 for grid_x, grid_y in region_data["tiles"]:
                     tile_x = grid_x * int(tilemap.tilewidth * zoom) + offset_x
                     tile_y = grid_y * int(tilemap.tileheight * zoom) + offset_y
                     grey_overlay = pygame.Surface((int(tilemap.tilewidth * zoom), int(tilemap.tileheight * zoom)), pygame.SRCALPHA)
-                    grey_overlay.fill((50, 50, 50, 150))  # Semi-transparent grey
+                    grey_overlay.fill((50, 50, 50, 150)) 
                     surface.blit(grey_overlay, (tile_x, tile_y))
         return
 
@@ -377,19 +496,27 @@ def render_locked_tiles_with_tooltips(surface, offset_x, offset_y, zoom, mouse_p
                 tile_y = grid_y * tile_height + offset_y
                 grey_overlay = pygame.Surface((tile_width, tile_height), pygame.SRCALPHA)
                 if hovering:
-                    grey_overlay.fill((100, 100, 255, 150))  # Semi-transparent blue for hover
+                    grey_overlay.fill((100, 100, 255, 150))  # Blue overlay for hovering
                 else:
-                    grey_overlay.fill((50, 50, 50, 150))  # Semi-transparent grey
+                    grey_overlay.fill((50, 50, 50, 150)) 
                 surface.blit(grey_overlay, (tile_x, tile_y))
 
-            # Render tooltip if hovering
+            # Store tooltip data if hovering
             if hovering:
-                render_tooltip(
-                    region_name,  # Pass the region name as the first line
-                    (mouse_pos[0] + 15, mouse_pos[1] + 15),  # Tooltip follows the mouse
-                    show_cost=False,
-                    additional_lines=[(f"Price: ${region_data['price']}", (255, 255, 0))]  # Yellow
-                )
+                tooltip_data = {
+                    "region_name": region_name,
+                    "mouse_pos": mouse_pos,
+                    "price": region_data["price"]
+                }
+
+    # Render the tooltip last to ensure it appears on top
+    if tooltip_data:
+        render_tooltip(
+            tooltip_data["region_name"],
+            (tooltip_data["mouse_pos"][0] + 15, tooltip_data["mouse_pos"][1] + 15),  # Tooltip follows the mouse
+            show_cost=False,
+            additional_lines=[(f"Price: ${tooltip_data['price']}", (255, 255, 0))] 
+        )
 
 # Function to render the tilemap
 def render_tilemap(surface, tilemap, offset_x, offset_y, zoom):
@@ -405,6 +532,7 @@ def render_tilemap(surface, tilemap, offset_x, offset_y, zoom):
                             tile_height = int(tilemap.tileheight * zoom)
                             scaled_tile = pygame.transform.scale(tile, (tile_width, tile_height))
                             surface.blit(scaled_tile, (x * tile_width + offset_x, y * tile_height + offset_y))
+    # Ensure locked tiles and their tooltips are rendered last
     render_locked_tiles_with_tooltips(surface, offset_x, offset_y, zoom, pygame.mouse.get_pos())
 
 # Function to render the grid only on tiles with a specific gid in the tilemap
@@ -432,6 +560,7 @@ def render_grid(surface, tilemap, offset_x, offset_y, zoom, valid_tiles):
 def render_placed_blocks(surface, placed_blocks, offset_x, offset_y, zoom, mouse_pos):
     tile_width = int(tilemap.tilewidth * zoom)
     tile_height = int(tilemap.tileheight * zoom)
+    tooltip_data = None  # Store tooltip data to render it last
 
     for (grid_x, grid_y), block_image in placed_blocks.items():
         block_x = grid_x * tile_width + offset_x
@@ -453,10 +582,14 @@ def render_placed_blocks(surface, placed_blocks, offset_x, offset_y, zoom, mouse
             tinted_image.fill((255, 0, 0, 205), special_flags=pygame.BLEND_RGBA_MULT)
             surface.blit(tinted_image, (block_x, block_y))
 
-        # Render tooltip if hovering over the block
+        # Store tooltip data if hovering over the block
         if block_x <= mouse_pos[0] < block_x + tile_width and block_y <= mouse_pos[1] < block_y + tile_height:
             ticks_left = placed_power_plant_ticks.get((grid_x, grid_y), None)
-            render_tooltip(building_name, (mouse_pos[0] + 15, mouse_pos[1] + 15), ticks_left)
+            tooltip_data = (building_name, (mouse_pos[0] + 15, mouse_pos[1] + 15), ticks_left)
+
+    # Render the tooltip last to ensure it appears on top
+    if tooltip_data:
+        render_tooltip(*tooltip_data)
 
 # Function to make text display
 def text(text, size, color, position, button=False, button_size=(0, 0), button_color=(0, 0, 0)):
@@ -524,7 +657,7 @@ def update_power():
                 placed_power_plant_ticks[(grid_x, grid_y)] -= 1
             elif building_name == "wind_turbine" and auto_repair_wind_turbines:
                 # Automatically repair wind turbines if the upgrade is active
-                repair_cost = max(1, int(building_prices[building_name] * 0.1))  # Repair cost is 10% of the building price
+                repair_cost = max(1, int(building_prices[building_name] * repair_cost_percentage)) 
                 if money >= repair_cost:
                     money -= repair_cost
                     placed_power_plant_ticks[(grid_x, grid_y)] = power_plant_ticks[building_name]
@@ -562,50 +695,50 @@ def render_tooltip(building, position, ticks_left=None, show_cost=False, additio
     font = pygame.font.Font(None, 21)
     lines = []
 
-    if building in locked_tiles:  # Check if the building is a region
-        lines.append((building, (255, 255, 255)))  # Display the region name
-        lines.append(("Unlockable Region", (255, 255, 255)))  # Display "Unlockable Region"
+    if building in locked_tiles: 
+        lines.append((building, (255, 255, 255)))  
+        lines.append(("Unlockable Region", (255, 255, 255)))  
     elif building in ["lab1", "lab2", "lab3"]:
         formatted_name = format_building_name(building)
-        lines.append((formatted_name, (255, 255, 255)))  # White
-        lines.append((f"Produces Research", (255, 255, 255)))  # White
+        lines.append((formatted_name, (255, 255, 255)))  
+        lines.append((f"Produces Research", (255, 255, 255)))  
         if show_cost:
-            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  # Green if affordable, red otherwise
+            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  
             lines.append((f"Cost: ${building_prices[building]}", cost_color))
-        lines.append((f"Produces: {lab1_research_per_second if building == 'lab1' else lab2_research_per_second if building == 'lab2' else lab3_research_per_second} RP/s", (255, 255, 0)))  # Yellow
+        lines.append((f"Produces: {lab1_research_per_second if building == 'lab1' else lab2_research_per_second if building == 'lab2' else lab3_research_per_second} RP/s", (255, 255, 0)))  
     elif building in ["house1", "house2", "house3"]:
         formatted_name = format_building_name(building)
-        lines.append((formatted_name, (255, 255, 255)))  # White
-        lines.append((f"Produces Money", (255, 255, 255)))  # White
+        lines.append((formatted_name, (255, 255, 255)))  
+        lines.append((f"Produces Money", (255, 255, 255)))  
         if show_cost:
-            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  # Green if affordable, red otherwise
+            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  
             lines.append((f"Cost: ${building_prices[building]}", cost_color))
-        lines.append((f"Converts: {house1_money_per_second if building == 'house1' else house2_money_per_second if building == 'house2' else house3_money_per_second} MW/s", (255, 255, 0)))  # Yellow
+        lines.append((f"Converts: {house1_money_per_second if building == 'house1' else house2_money_per_second if building == 'house2' else house3_money_per_second} MW/s", (255, 255, 0)))  
     elif building in ["battery1", "battery2"]:
         formatted_name = format_building_name(building)
-        lines.append((formatted_name, (255, 255, 255)))  # White
-        lines.append((f"Stores Power", (255, 255, 255)))  # White
+        lines.append((formatted_name, (255, 255, 255)))  
+        lines.append((f"Stores Power", (255, 255, 255)))  
         if show_cost:
-            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  # Green if affordable, red otherwise
+            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  
             lines.append((f"Cost: ${building_prices[building]}", cost_color))
-        lines.append((f"Stores: {battery1_power if building == 'battery1' else battery2_power} Power", (255, 255, 0)))  # Yellow
+        lines.append((f"Stores: {battery1_power if building == 'battery1' else battery2_power} Power", (255, 255, 0)))  
     elif building in ["coal_plant", "nuclear_plant", "fusion_plant", "wind_turbine", "solar_panel"]:
         formatted_name = format_building_name(building)
-        lines.append((formatted_name, (255, 255, 255)))  # White
-        lines.append((f"Produces Power", (255, 255, 255)))  # White
+        lines.append((formatted_name, (255, 255, 255)))  
+        lines.append((f"Produces Power", (255, 255, 255)))  
         if ticks_left is not None:
             if ticks_left <= 0:
-                lines.append((f"Status: Broken", (255, 0, 0)))  # Red
-                repair_cost = round(building_prices[building] * 0.75, 2)  # Correctly calculate repair cost
-                lines.append((f"Repair Cost: ${repair_cost}", (255, 255, 0)))  # Yellow
+                lines.append((f"Status: Broken", (255, 0, 0)))
+                repair_cost = round(building_prices[building] * repair_cost_percentage, 2)  # Correctly calculate repair cost
+                lines.append((f"Repair Cost: ${repair_cost}", (255, 255, 0)))
             else:
-                lines.append((f"Status: Operational", (0, 255, 0)))  # Green
+                lines.append((f"Status: Operational", (0, 255, 0)))
         if show_cost:
-            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  # Green if affordable, red otherwise
+            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)
             lines.append((f"Cost: ${building_prices[building]}", cost_color))
         lines.append((f"Produces: {wind_turbine_power_per_second if building == 'wind_turbine' else solar_panel_power_per_second if building == 'solar_panel' else coal_plant_power_per_second if building == 'coal_plant' else nuclear_plant_power_per_second if building == 'nuclear_plant' else fusion_plant_power_per_second} MW/s", (255, 255, 0)))  # Yellow
         if ticks_left is not None:
-            lines.append((f"Ticks Left: {ticks_left} / {power_plant_ticks[building]}", (255, 0, 255)))  # Purple
+            lines.append((f"Ticks Left: {ticks_left} / {power_plant_ticks[building]}",(255, 0, 255)))
 
     # Add additional lines if provided
     if additional_lines:
@@ -619,7 +752,7 @@ def render_tooltip(building, position, ticks_left=None, show_cost=False, additio
 
     # Create a transparent surface for the tooltip background
     tooltip_surface = pygame.Surface((tooltip_width, tooltip_height), pygame.SRCALPHA)
-    pygame.draw.rect(tooltip_surface, (20, 20, 20, 200), (0, 0, tooltip_width, tooltip_height), border_radius=7)  # Rounded corners
+    pygame.draw.rect(tooltip_surface, (20, 20, 20, 200), (0, 0, tooltip_width, tooltip_height), border_radius=7)
 
     # Draw the background
     screen.blit(tooltip_surface, position)
@@ -649,10 +782,10 @@ def render_gui():
     else:
         text(f"Research: {round(research, 2)} RP + {round(research_ps, 2)}/s", 28, (255, 255, 255), (20, 100 - gui_scroll_offset))
 
-    if heat_ps == 0:
-        text(f"Heat: {round(heat, 2)} / {max_heat}", 28, (255, 255, 255), (20, 140 - gui_scroll_offset))
+    if pollution_ps == 0:
+        text(f"Pollution: {round(pollution, 2)} / {max_pollution}", 28, (255, 255, 255), (20, 140 - gui_scroll_offset))
     else:
-        text(f"Heat: {round(heat, 2)} / {max_heat} + {round(heat_ps, 2)}/s", 28, (255, 255, 255), (20, 140 - gui_scroll_offset))
+        text(f"Pollution: {round(pollution, 2)} / {max_pollution} + {round(pollution_ps, 2)}/s", 28, (255, 255, 255), (20, 140 - gui_scroll_offset))
 
     research_button_rect = text("Research", 24, (255, 255, 255), (20, 180 - gui_scroll_offset), True, (120, 35), (100, 100, 100))
     destroy_button_rect = text("Destroy: ON" if destroy_mode else "Destroy: OFF", 24, (255, 255, 255), (20, 220 - gui_scroll_offset), True, (120, 35), (100, 100, 100))
@@ -698,7 +831,7 @@ def render_gui():
     for buttons, buildings in button_groups:
         for i, rect in enumerate(buttons):
             if rect.collidepoint(mouse_x, mouse_y):
-                render_tooltip(buildings[i], (mouse_x + 15, mouse_y), show_cost=True)  # Show cost in GUI tooltips
+                render_tooltip(buildings[i], (mouse_x + 15, mouse_y), show_cost=True)
                 break
 
 # Handle block restoration when clicking on a broken building
@@ -713,11 +846,20 @@ def handle_repair(grid_x, grid_y):
 
         # Check if the building is broken and restore it
         if building_name in power_plant_ticks and placed_power_plant_ticks.get((grid_x, grid_y), 0) <= 0:
-            repair_cost = max(0.75, round(building_prices[building_name] * 0.75, 2))  # Correctly calculate repair cost
+            repair_cost = max(repair_cost_percentage, round(building_prices[building_name] * repair_cost_percentage, 2))
             global money
             if money >= repair_cost:
                 money -= repair_cost
                 placed_power_plant_ticks[(grid_x, grid_y)] = power_plant_ticks[building_name]
+
+                repair_sound1 = pygame.mixer.Sound("Sound_Effects/rachet_click.mp3")
+                repair_sound2 = pygame.mixer.Sound("Sound_Effects/repair_metal.mp3")
+
+                repair_sound1.set_volume(0.5)
+                repair_sound2.set_volume(0.5)
+
+                repair_sound1.play()
+                repair_sound2.play()
 
 # Function to unlock a region
 def unlock_region(region_name):
@@ -728,6 +870,8 @@ def unlock_region(region_name):
             money -= price
             locked_tiles[region_name]["locked"] = False
             print(f"Unlocked {region_name} for ${price}.")
+            unlock_sound = pygame.mixer.Sound("Sound_Effects/unlock_region.mp3")
+            unlock_sound.play()
         else:
             print("Not enough money to unlock this region!")
 
@@ -794,6 +938,12 @@ while running:
         elif research_tree_open and event.type == pygame.MOUSEBUTTONDOWN:
             # Handle clicks only for the research tree when it is open
             handle_research_tree_click(event.pos)
+
+        elif event.type == pygame.MOUSEBUTTONUP:
+            stop_research_tree_drag()
+
+        elif event.type == pygame.MOUSEMOTION:
+            handle_research_tree_drag(event.pos)
 
         elif not research_tree_open and event.type == pygame.MOUSEBUTTONDOWN:
             # Handle other interactions only when the research tree is closed
@@ -870,20 +1020,21 @@ while running:
 
             # Handle region unlocking
             if not destroy_mode and not selected_building:  # Allow region purchasing only if not in build or destroy mode
-                for region_name, region_data in locked_tiles.items():
-                    if region_data["locked"]:
-                        for grid_x, grid_y in region_data["tiles"]:
-                            tile_width = int(tilemap.tilewidth * zoom)
-                            tile_height = int(tilemap.tileheight * zoom)
-                            tile_rect = pygame.Rect(
-                                grid_x * tile_width + gui_width + camera_x,
-                                grid_y * tile_height + camera_y,
-                                tile_width,
-                                tile_height,
-                            )
-                            if tile_rect.collidepoint(mouse_x, mouse_y):
-                                unlock_region(region_name)
-                                break
+                if event.button == 1:  # Only allow unlocking with left click
+                    for region_name, region_data in locked_tiles.items():
+                        if region_data["locked"]:
+                            for grid_x, grid_y in region_data["tiles"]:
+                                tile_width = int(tilemap.tilewidth * zoom)
+                                tile_height = int(tilemap.tileheight * zoom)
+                                tile_rect = pygame.Rect(
+                                    grid_x * tile_width + gui_width + camera_x,
+                                    grid_y * tile_height + camera_y,
+                                    tile_width,
+                                    tile_height,
+                                )
+                                if tile_rect.collidepoint(mouse_x, mouse_y):
+                                    unlock_region(region_name)
+                                    break
 
             # Handle repairing buildings regardless of build mode
             if not destroy_mode:
@@ -922,7 +1073,7 @@ while running:
 
                     # Check if the building is broken and restore it
                     if building_name in power_plant_ticks and placed_power_plant_ticks.get((grid_x, grid_y), 0) <= 0:
-                        repair_cost = max(1, int(building_prices[building_name] * 0.75))  # Ensure repair cost is at least 1
+                        repair_cost = max(1, int(building_prices[building_name] * repair_cost_percentage))
                         if money >= repair_cost:
                             money -= repair_cost
                             placed_power_plant_ticks[(grid_x, grid_y)] = power_plant_ticks[building_name]
@@ -944,13 +1095,15 @@ while running:
                                     placed_power_plant_ticks[(grid_x, grid_y)] = power_plant_ticks[building_name]
 
                                 update_max_power()
+                                build_sound = pygame.mixer.Sound("Sound_Effects/lego_building.mp3")
+                                build_sound.play()
 
             if event.button == 3:
                 # Start dragging the map
                 dragging = True
                 last_mouse_pos = event.pos
 
-        elif event.type == pygame.MOUSEBUTTONUP:
+        if event.type == pygame.MOUSEBUTTONUP:
             # Stop dragging the map
             if event.button == 3:
                 dragging = False
@@ -990,6 +1143,23 @@ while running:
     if research_tree_open:
         # Render the research tree if open
         render_research_tree()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                handle_research_tree_click(event.pos)
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                stop_research_tree_drag()
+
+            elif event.type == pygame.MOUSEMOTION:
+                handle_research_tree_drag(event.pos)
+
+            elif event.type == pygame.MOUSEWHEEL:
+                handle_research_tree_zoom(event)
+
         pygame.display.flip()
         continue
 
