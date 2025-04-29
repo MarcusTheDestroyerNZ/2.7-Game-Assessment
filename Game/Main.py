@@ -101,12 +101,12 @@ selected_building = None
 destroy_mode = False
 
 global money, money_ps, power, max_power, power_ps, research, research_ps, heat, max_heat, heat_pm
-money = 1000000000
+money = 1000
 money_ps = 0
 power = 0
 max_power = 50
 power_ps = 0
-research = 0
+research = 10000
 research_ps = 0
 pollution = 0
 max_pollution = 1000
@@ -157,7 +157,7 @@ auto_repair_wind_turbines = False
 
 # Percentage of the building cost returned when selling
 sell_percentage = 0.5
-repair_cost_percentage = 0.25
+repair_cost_percentage = 0.5
 
 # Define locked tiles for each region (manually assign tiles here)
 locked_tiles = {
@@ -270,6 +270,20 @@ research_upgrades = [
         "purchased": False
     },
     {
+        "name": "Unlock Research Lab 2",
+        "cost": 1000,
+        "currency": "research",
+        "effect": lambda: unlock_research_lab_2(),
+        "purchased": False
+    },
+    {
+        "name": "Unlock Research Lab 3",
+        "cost": 5000,
+        "currency": "research",
+        "effect": lambda: unlock_research_lab_3(),
+        "purchased": False
+    },
+    {
         "name": "Automaticly repair Wind Turbines",
         "cost": 100,  
         "currency": "research",  
@@ -320,6 +334,37 @@ research_upgrades = [
     }
 ]
 
+# Define the research tree layout as a global variable
+tree_layout = [
+    # 1st node row
+    [
+        {"name": "Double Wind Turbine Ticks", "x": 0, "y": 400, "image": power_plant_images[0], "unlocks": ["Unlock Research Lab 1", "Double Wind Turbine Efficiency"]},
+    ],
+    # 2nd node row
+    [
+        {"name": "Unlock Research Lab 1", "x": 500, "y": 300, "image": lab_images[0], "unlocks": ["Unlock Solar Panels", "Unlock Research Lab 2", "Unlock House 1"]},
+        {"name": "Double Wind Turbine Efficiency", "x": 500, "y": 500, "image": power_plant_images[0], "unlocks": ["Automaticly repair Wind Turbines"]},
+    ],
+    # 3rd node row
+    [
+        {"name": "Unlock Solar Panels", "x": 1000, "y": 100, "image": power_plant_images[1], "unlocks": ["Double Solar Panel Ticks", "Double Solar Panel Efficiency"]},
+        {"name": "Unlock Research Lab 2", "x": 1000, "y": 300, "image": lab_images[1], "unlocks": ["Unlock Research Lab 3"]},
+        {"name": "Unlock House 1", "x": 1000, "y": 500, "image": house_images[0], "unlocks": ["Unlock House 2"]},
+        {"name": "Automaticly repair Wind Turbines", "x": 1000, "y": 700, "image": power_plant_images[0], "unlocks": []},
+    ],
+    # 4th node row
+    [
+        {"name": "Double Solar Panel Ticks", "x": 1500, "y": -100, "image": power_plant_images[1], "unlocks": []},
+        {"name": "Double Solar Panel Efficiency", "x": 1500, "y": 100, "image": power_plant_images[1], "unlocks": []},
+        {"name": "Unlock Research Lab 3", "x": 1500, "y": 300, "image": lab_images[2], "unlocks": []},
+        {"name": "Unlock House 2", "x": 1500, "y": 500, "image": house_images[1], "unlocks": ["Unlock House 3"]},
+    ],
+    # 5th node row
+    [
+        {"name": "Unlock House 3", "x": 2000, "y": 500, "image": house_images[2], "unlocks": []},
+    ],
+]
+
 # Function to double wind turbine ticks
 def double_wind_turbine_ticks():
     global power_plant_ticks
@@ -334,6 +379,16 @@ def double_wind_turbine_efficiency():
 def unlock_research_lab_1():
     global Unlock_lab_1
     Unlock_lab_1 = True
+
+# Function to unlock research lab 2
+def unlock_research_lab_2():
+    global Unlock_lab_2
+    Unlock_lab_2 = True
+
+# Function to unlock research lab 3
+def unlock_research_lab_3():
+    global Unlock_lab_3
+    Unlock_lab_3 = True
 
 # Function to automatically repair wind turbines
 def automaticly_repair_wind_turbines():
@@ -371,13 +426,13 @@ def unlock_house_3():
     Unlock_house_3 = True
 
 # Variables for research tree movement and zoom
-research_tree_offset_x = 0
-research_tree_offset_y = new_screen_height / 2
+research_tree_offset_x = 100
+research_tree_offset_y = 250
 research_tree_dragging = False
 last_research_mouse_pos = None
-research_tree_zoom = 0.5
+research_tree_zoom = 0.4
 research_tree_zoom_step = 0.1
-min_research_tree_zoom = 0.5
+min_research_tree_zoom = 0.1
 max_research_tree_zoom = 2.0
 
 # Function to render the research tree GUI
@@ -395,37 +450,6 @@ def render_research_tree():
     text(f"Research Points: {research}", 24, (255, 255, 255), (20, 150))
     text(f"Money: ${money}", 24, (255, 255, 255), (20, 180))
 
-    # Define the new research tree layout
-    tree_layout = [
-        # 1st node row
-        [
-            {"name": "Double Wind Turbine Ticks", "x": 100, "y": 400, "image": power_plant_images[0], "unlocks": ["Unlock Research Lab 1", "Double Wind Turbine Efficiency"]},
-        ],
-        # 2nd node row
-        [
-            {"name": "Unlock Research Lab 1", "x": 500, "y": 300, "image": lab_images[0], "unlocks": ["Unlock Solar Panels", "Unlock House 1"]},
-            {"name": "Double Wind Turbine Efficiency", "x": 500, "y": 500, "image": power_plant_images[0], "unlocks": ["Automaticly repair Wind Turbines"]},
-        ],
-        # 3rd node row
-        [
-            {"name": "Unlock Solar Panels", "x": 1000, "y": 200, "image": power_plant_images[1], "unlocks": ["Double Solar Panel Ticks", "Double Solar Panel Efficiency"]},
-            {"name": "Unlock House 1", "x": 1000, "y": 400, "image": house_images[0], "unlocks": ["Unlock House 2"]},
-            {"name": "Automaticly repair Wind Turbines", "x": 1000, "y": 600, "image": power_plant_images[0], "unlocks": []},
-        ],
-        # 4th node row
-        [
-            {"name": "Double Solar Panel Ticks", "x": 1500, "y": 0, "image": power_plant_images[1], "unlocks": []},
-            {"name": "Double Solar Panel Efficiency", "x": 1500, "y": 200, "image": power_plant_images[1], "unlocks": []},
-            {"name": "Unlock House 2", "x": 1500, "y": 400, "image": house_images[1], "unlocks": ["Unlock House 3"]},
-        ],
-        # 5th node row
-        [
-            {"name": "Unlock House 3", "x": 2000, "y": 400, "image": house_images[2], "unlocks": []},
-        ],
-
-
-    ]
-
     # Draw connections between nodes
     for i in range(len(tree_layout)):
         for node in tree_layout[i]:
@@ -434,36 +458,55 @@ def render_research_tree():
                 for j in range(i + 1, len(tree_layout)):
                     for next_node in tree_layout[j]:
                         if next_node["name"] == unlock_name:
-                            # Calculate the start and end points of the line
-                            start_x = node["x"] * research_tree_zoom + research_tree_offset_x + (300 * research_tree_zoom)  # right side of the left node
-                            start_y = node["y"] * research_tree_zoom + research_tree_offset_y + (100 * research_tree_zoom) / 2  # Middle of the left node
+                            # Check if the target node is unlockable
+                            upgrade = next((u for u in research_upgrades if u["name"] == next_node["name"]), None)
+                            if upgrade:
+                                prerequisites_met = all(
+                                    prereq["purchased"]
+                                    for prereq in research_upgrades
+                                    if prereq["name"] in [n["name"] for t in tree_layout for n in t if next_node["name"] in n["unlocks"]]
+                                )
+                                line_color = (0, 255, 0) if prerequisites_met and not upgrade["purchased"] else (255, 0, 0)
 
-                            end_x = next_node["x"] * research_tree_zoom + research_tree_offset_x  # left side of the right node
-                            end_y = next_node["y"] * research_tree_zoom + research_tree_offset_y + (100 * research_tree_zoom) / 2  # Middle of the right node
+                                # Calculate the start and end points of the line
+                                start_x = node["x"] * research_tree_zoom + research_tree_offset_x + (300 * research_tree_zoom)  # right side of the left node
+                                start_y = node["y"] * research_tree_zoom + research_tree_offset_y + (100 * research_tree_zoom) / 2  # Middle of the left node
 
-                            # Draw the line
-                            pygame.draw.line(
-                                screen,
-                                (0, 255, 0),
-                                (start_x, start_y),
-                                (end_x, end_y),
-                                3,
-                            )
+                                end_x = next_node["x"] * research_tree_zoom + research_tree_offset_x  # left side of the right node
+                                end_y = next_node["y"] * research_tree_zoom + research_tree_offset_y + (100 * research_tree_zoom) / 2  # Middle of the right node
+
+                                # Draw the line
+                                pygame.draw.line(
+                                    screen,
+                                    line_color,
+                                    (start_x, start_y),
+                                    (end_x, end_y),
+                                    3,
+                                )
 
     # Draw research nodes with images, names, and prices
     for tier in tree_layout:
         for node in tier:
             upgrade = next((u for u in research_upgrades if u["name"] == node["name"]), None)
             if upgrade:
+                # Check if all prerequisites are purchased
+                prerequisites_met = all(
+                    prereq["purchased"]
+                    for prereq in research_upgrades
+                    if prereq["name"] in [n["name"] for t in tree_layout for n in t if node["name"] in n["unlocks"]]
+                )
                 affordable = (money >= upgrade["cost"] if upgrade["currency"] == "money" else research >= upgrade["cost"])
-                button_color = (0, 255, 0) if affordable and not upgrade["purchased"] else (100, 100, 100)
-                node["button_rect"] = pygame.Rect(
+                button_color = (0, 255, 0) if affordable and not upgrade["purchased"] and prerequisites_met else (100, 100, 100)
+                button_rect = pygame.Rect(
                     node["x"] * research_tree_zoom + research_tree_offset_x,
                     node["y"] * research_tree_zoom + research_tree_offset_y,
                     300 * research_tree_zoom,  # Width of the button
                     100 * research_tree_zoom,  # Height of the button
                 )
-                pygame.draw.rect(screen, button_color, node["button_rect"])
+                pygame.draw.rect(screen, button_color, button_rect)
+
+                # Assign the button_rect to the upgrade dictionary
+                upgrade["button_rect"] = button_rect
 
                 # Draw the corresponding image on the left
                 if "image" in node:
@@ -507,22 +550,29 @@ def handle_research_tree_click(mouse_pos):
     for upgrade in research_upgrades:
         if upgrade.get("button_rect") and upgrade["button_rect"].collidepoint(mouse_pos):
             if not upgrade["purchased"]:
-                if upgrade["currency"] == "money" and money >= upgrade["cost"]:
-                    money -= upgrade["cost"]
-                    upgrade["purchased"] = True
-                    upgrade["effect"]()
-                elif upgrade["currency"] == "research" and research >= upgrade["cost"]:
-                    research -= upgrade["cost"]
-                    upgrade["purchased"] = True
-                    upgrade["effect"]()
+                # Check if all prerequisites are purchased
+                prerequisites_met = all(
+                    prereq["purchased"]
+                    for prereq in research_upgrades
+                    if prereq["name"] in [n["name"] for t in tree_layout for n in t if upgrade["name"] in n["unlocks"]]
+                )
+                if prerequisites_met:
+                    if upgrade["currency"] == "money" and money >= upgrade["cost"]:
+                        money -= upgrade["cost"]
+                        upgrade["purchased"] = True
+                        upgrade["effect"]()
+                    elif upgrade["currency"] == "research" and research >= upgrade["cost"]:
+                        research -= upgrade["cost"]
+                        upgrade["purchased"] = True
+                        upgrade["effect"]()
                 return  # Stop further processing once a button is clicked
 
     # Handle back button click
     if back_button_rect and back_button_rect.collidepoint(mouse_pos):
         research_tree_open = False
 
-    # Start dragging the research tree
-    if not research_tree_dragging:
+    # Start dragging the research tree only with the right mouse button
+    if pygame.mouse.get_pressed()[2]:  # Right mouse button
         research_tree_dragging = True
         last_research_mouse_pos = mouse_pos
 
