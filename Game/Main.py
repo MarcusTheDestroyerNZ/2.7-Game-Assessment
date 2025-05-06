@@ -59,6 +59,10 @@ battery_images = [
     pygame.image.load("Assets/battery2.png")
 ]
 
+# Load the lock image
+lock_image = pygame.image.load("Assets/lock.png")
+lock_image = pygame.transform.scale(lock_image, (40, 40))  # Scale the lock image to fit the buttons
+
 # Dynamically load building prices
 building_prices = {building: get_building_stat(building, "price") for building in building_stats[0]}
 
@@ -121,7 +125,7 @@ money_ps = 0
 power = 0
 max_power = 50
 power_ps = 0
-research = 0
+research = 100000
 research_ps = 0
 pollution = 0
 max_pollution = 1000
@@ -235,6 +239,32 @@ locked_tiles = {
     },
 }
 
+# Add unlock flags for buildings
+building_unlocks = {
+    "wind_turbine": True,  # Wind turbines are unlocked by default
+    "solar_panel": False,
+    "coal_plant": False,
+    "nuclear_plant": False,
+    "fusion_plant": False,
+    "lab1": False,
+    "lab2": False,
+    "lab3": False,
+    "house1": False,
+    "house2": False,
+    "house3": False,
+    "battery1": False,
+    "battery2": False
+}
+
+# Update unlock flags in research effects
+def unlock_building(building_name):
+    global building_unlocks
+    if building_name in building_unlocks:
+        building_unlocks[building_name] = True
+        print(building_unlocks[building_name])
+    else:
+        print(f"Building {building_name} not found in unlocks.")
+
 # Define research upgrades
 research_upgrades = [
     {
@@ -255,21 +285,21 @@ research_upgrades = [
         "name": "Unlock Research Lab 1",
         "cost": 150,  
         "currency": "money",  
-        "effect": lambda: unlock_research_lab_1(),
+        "effect": lambda: unlock_building("lab1"),
         "purchased": False
     },
     {
         "name": "Unlock Research Lab 2",
         "cost": 1000,
         "currency": "research",
-        "effect": lambda: unlock_research_lab_2(),
+        "effect": lambda: unlock_building("lab2"),
         "purchased": False
     },
     {
         "name": "Unlock Research Lab 3",
         "cost": 5000,
         "currency": "research",
-        "effect": lambda: unlock_research_lab_3(),
+        "effect": lambda: unlock_building("lab3"),
         "purchased": False
     },
     {
@@ -283,28 +313,28 @@ research_upgrades = [
         "name": "Unlock House 1",
         "cost": 250,  
         "currency": "research",  
-        "effect": lambda: unlock_house_1(),
+        "effect": lambda: unlock_building("house1"),
         "purchased": False
     },
     {
         "name": "Unlock House 2",
         "cost": 1000,
         "currency": "research",
-        "effect": lambda: unlock_house_2(),
+        "effect": lambda: unlock_building("house2"),
         "purchased": False
     },
     {
         "name": "Unlock House 3",
         "cost": 5000,
         "currency": "research",
-        "effect": lambda: unlock_house_3(),
+        "effect": lambda: unlock_building("house3"),
         "purchased": False
     },
     {
         "name": "Unlock Solar Panels",
         "cost": 1000,  
         "currency": "research",  
-        "effect": lambda: unlock_solar_panels(),
+        "effect": lambda: unlock_building("solar_panel"),
         "purchased": False
     },
     {
@@ -356,75 +386,28 @@ tree_layout = [
 
 # Function to double wind turbine ticks
 def double_wind_turbine_ticks():
-    """Double the ticks for wind turbines."""
     global power_plant_ticks
     power_plant_ticks["wind_turbine"] *= 2
 
 # Function to increase wind turbine efficiency
 def double_wind_turbine_efficiency():
-    """Double the efficiency of wind turbines."""
     global power_per_second
     power_per_second["wind_turbine"] *= 2
 
-# Function to unlock research lab 1
-def unlock_research_lab_1():
-    """Unlock the first research lab."""
-    global unlock_lab_1
-    unlock_lab_1 = True
-
-# Function to unlock research lab 2
-def unlock_research_lab_2():
-    """Unlock the second research lab."""
-    global unlock_lab_2
-    unlock_lab_2 = True
-
-# Function to unlock research lab 3
-def unlock_research_lab_3():
-    """Unlock the third research lab."""
-    global unlock_lab_3
-    unlock_lab_3 = True
-
 # Function to automatically repair wind turbines
 def automatically_repair_wind_turbines():
-    """Enable automatic repair for wind turbines."""
     global auto_repair_wind_turbines
     auto_repair_wind_turbines = True
 
-# Function to unlock house 1
-def unlock_house_1():
-    """Unlock the first house."""
-    global unlock_house_1
-    unlock_house_1 = True
-
-# Function to unlock solar panels
-def unlock_solar_panels():
-    """Unlock solar panels."""
-    global unlock_solar_panels
-    unlock_solar_panels = True
-
 # Function to double solar panel ticks
 def double_solar_panel_ticks():
-    """Double the ticks for solar panels."""
     global power_plant_ticks
     power_plant_ticks["solar_panel"] *= 2
 
 # Function to double solar panel efficiency
 def double_solar_panel_efficiency():
-    """Double the efficiency of solar panels."""
     global power_per_second
     power_per_second["solar_panel"] *= 2
-
-# Function to unlock house 2
-def unlock_house_2():
-    """Unlock the second house."""
-    global unlock_house_2
-    unlock_house_2 = True
-
-# Function to unlock house 3
-def unlock_house_3():
-    """Unlock the third house."""
-    global unlock_house_3
-    unlock_house_3 = True
 
 # Variables for research tree movement and zoom
 research_tree_offset_x = 100
@@ -441,7 +424,6 @@ custom_font = pygame.font.Font("Assets/font.ttf", 24)
 
 # Function to render the research tree GUI
 def render_research_tree():
-    """Render the research tree interface."""
     global back_button_rect
     screen.fill((50, 50, 50))
 
@@ -561,7 +543,6 @@ def render_research_tree():
 
 # Function to handle research tree interactions
 def handle_research_tree_click(mouse_pos):
-    """Handle clicks on the research tree."""
     global research, money, research_tree_open, research_tree_dragging, last_research_mouse_pos
     for upgrade in research_upgrades:
         if upgrade.get("button_rect") and upgrade["button_rect"].collidepoint(mouse_pos):
@@ -594,7 +575,6 @@ def handle_research_tree_click(mouse_pos):
 
 # Function to handle research tree dragging
 def handle_research_tree_drag(mouse_pos):
-    """Handle dragging of the research tree."""
     global research_tree_offset_x, research_tree_offset_y, last_research_mouse_pos
     if research_tree_dragging and last_research_mouse_pos:
         dx = mouse_pos[0] - last_research_mouse_pos[0]
@@ -605,14 +585,12 @@ def handle_research_tree_drag(mouse_pos):
 
 # Function to stop dragging the research tree
 def stop_research_tree_drag():
-    """Stop dragging the research tree."""
     global research_tree_dragging, last_research_mouse_pos
     research_tree_dragging = False
     last_research_mouse_pos = None
 
 # Function to handle research tree zooming
 def handle_research_tree_zoom(event):
-    """Handle zooming of the research tree."""
     global research_tree_zoom, research_tree_offset_x, research_tree_offset_y
     if event.y > 0:
         new_zoom = min(research_tree_zoom + research_tree_zoom_step, max_research_tree_zoom)
@@ -631,7 +609,6 @@ def handle_research_tree_zoom(event):
 
 # Function to render locked tiles with a grey overlay and tooltips
 def render_locked_tiles_with_tooltips(surface, offset_x, offset_y, zoom, mouse_pos):
-    """Render locked tiles with tooltips."""
     tooltip_data = None  # Store tooltip data to render it last
 
     if destroy_mode or selected_building:  # Disable tooltips and purchasing in build or destroy mode
@@ -690,7 +667,6 @@ def render_locked_tiles_with_tooltips(surface, offset_x, offset_y, zoom, mouse_p
 
 # Function to render the tilemap
 def render_tilemap(surface, tilemap, offset_x, offset_y, zoom):
-    """Render the tilemap."""
     for layer in tilemap.layers:
         if hasattr(layer, "data"):
             for y in range(layer.height):
@@ -708,7 +684,6 @@ def render_tilemap(surface, tilemap, offset_x, offset_y, zoom):
 
 # Function to render the grid only on tiles with a specific gid in the tilemap
 def render_grid(surface, tilemap, offset_x, offset_y, zoom, valid_tiles):
-    """Render the grid on valid tiles."""
     tile_width = int(tilemap.tilewidth * zoom)
     tile_height = int(tilemap.tileheight * zoom)
 
@@ -730,7 +705,6 @@ def render_grid(surface, tilemap, offset_x, offset_y, zoom, valid_tiles):
 
 # Function to render placed blocks with hover effect in destroy mode and tooltips
 def render_placed_blocks(surface, placed_blocks, offset_x, offset_y, zoom, mouse_pos):
-    """Render placed blocks with hover effects and tooltips."""
     tile_width = int(tilemap.tilewidth * zoom)
     tile_height = int(tilemap.tileheight * zoom)
     tooltip_data = None  # Store tooltip data to render it last
@@ -766,7 +740,6 @@ def render_placed_blocks(surface, placed_blocks, offset_x, offset_y, zoom, mouse
 
 # Function to make text display
 def render_text(text, size, color, position, button=False, button_size=(0, 0), button_color=(0, 0, 0)):
-    """Render text on the screen."""
     font = pygame.font.Font("Assets/font.ttf", size + 5)  # Increase font size by 5px
     display_text = font.render(text, True, color)
     if button:
@@ -781,7 +754,6 @@ def render_text(text, size, color, position, button=False, button_size=(0, 0), b
         return None
 
 def can_place_building(grid_x, grid_y):
-    """Check if a building can be placed at the specified grid coordinates."""
     if 0 <= grid_x < tilemap.width and 0 <= grid_y < tilemap.height:
         gid_layer2 = tilemap.layers[1].data[grid_y][grid_x]
         return gid_layer2 == 0
@@ -789,7 +761,6 @@ def can_place_building(grid_x, grid_y):
 
 # Update max power dynamically based on placed batteries
 def update_max_power():
-    """Update the maximum power capacity based on placed batteries."""
     global max_power
     max_power = 50
     for (grid_x, grid_y), block_image in placed_blocks.items():
@@ -799,7 +770,6 @@ def update_max_power():
 
 # Function to update research points based on placed labs
 def update_research():
-    """Update research points based on placed labs."""
     global research, research_ps
     added_research = sum(research_per_second[building_mapping[block_image]] for block_image in placed_blocks.values() if building_mapping[block_image] in research_per_second)
     research += added_research
@@ -807,7 +777,6 @@ def update_research():
 
 # Function to update power points based on placed power plants
 def update_power():
-    """Update power points based on placed power plants."""
     global power, power_ps, money
     added_power = 0
 
@@ -834,7 +803,6 @@ def update_power():
 
 # Function to convert power into money based on placed houses
 def update_money():
-    """Convert power into money based on placed houses."""
     global money, money_ps, power
     required_power = 0
     earned_money = 0
@@ -856,12 +824,10 @@ def update_money():
 
 # Function to format building names for tooltips
 def format_building_name(building_name):
-    """Format building names for tooltips."""
     return building_name.replace("_", " ").title()
 
 # Function to render tooltips
 def render_tooltip(building, position, ticks_left=None, show_cost=False, additional_lines=None):
-    """Render tooltips for buildings."""
     font = pygame.font.Font(None, 21)
     lines = []
 
@@ -933,81 +899,144 @@ def render_tooltip(building, position, ticks_left=None, show_cost=False, additio
 
 # Adjust GUI rendering to include increased font sizes
 def render_gui():
-    """Render the GUI elements."""
     pygame.draw.rect(screen, (50, 50, 50), gui_rect)
 
-    global destroy_button_rect, research_button_rect, sell_power_button_rect, unlock_button_rect
-    
-    if money_ps == 0:
-        render_text(f"Money: ${round(money, 2)}", 15, (255, 255, 255), (20, 20 - gui_scroll_offset))  
-    else:
-        render_text(f"Money: ${round(money, 2)} + {round(money_ps, 2)}/s", 15, (255, 255, 255), (20, 20 - gui_scroll_offset))  
+    global destroy_button_rect, research_button_rect, sell_power_button_rect
 
-    if power_ps == 0:
-        render_text(f"Power: {round(power, 2)} MW / {max_power} MW", 15, (255, 255, 255), (20, 50 - gui_scroll_offset))  
-    else:
-        render_text(f"Power: {round(power, 2)} MW / {max_power} MW + {round(power_ps, 2)}/s", 15, (255, 255, 255), (20, 50 - gui_scroll_offset))  
+    # Render resource stats
+    render_text(f"Money: ${round(money, 2)}", 15, (255, 255, 255), (20, 20 - gui_scroll_offset))
+    render_text(f"Power: {round(power, 2)} MW / {max_power} MW", 15, (255, 255, 255), (20, 50 - gui_scroll_offset))
+    render_text(f"Research: {round(research, 2)} RP", 15, (255, 255, 255), (20, 80 - gui_scroll_offset))
 
-    if research_ps == 0:
-        render_text(f"Research: {round(research, 2)} RP", 15, (255, 255, 255), (20, 80 - gui_scroll_offset))  
-    else:
-        render_text(f"Research: {round(research, 2)} RP + {round(research_ps, 2)}/s", 15, (255, 255, 255), (20, 80 - gui_scroll_offset))  
+    # Render buttons
+    research_button_rect = render_text("Research", 10, (255, 255, 255), (20, 180 - gui_scroll_offset), True, (120, 35), (100, 100, 100))
+    destroy_button_rect = render_text("Destroy: ON" if destroy_mode else "Destroy: OFF", 10, (255, 255, 255), (20, 220 - gui_scroll_offset), True, (120, 35), (100, 100, 100))
+    sell_power_button_rect = render_text("Sell Power", 10, (255, 255, 255), (20, 260 - gui_scroll_offset), True, (120, 35), (100, 100, 100))
 
-    if pollution_ps == 0:
-        render_text(f"Pollution: {round(pollution, 2)} / {max_pollution}", 15, (255, 255, 255), (20, 110 - gui_scroll_offset))  
-    else:
-        render_text(f"Pollution: {round(pollution, 2)} / {max_pollution} + {round(pollution_ps, 2)}/s", 15, (255, 255, 255), (20, 110 - gui_scroll_offset))  
-
-    research_button_rect = render_text("Research", 10, (255, 255, 255), (20, 180 - gui_scroll_offset), True, (120, 35), (100, 100, 100))  
-    destroy_button_rect = render_text("Destroy: ON" if destroy_mode else "Destroy: OFF", 10, (255, 255, 255), (20, 220 - gui_scroll_offset), True, (120, 35), (100, 100, 100))  
-    sell_power_button_rect = render_text("Sell Power", 10, (255, 255, 255), (20, 260 - gui_scroll_offset), True, (120, 35), (100, 100, 100))  
-    render_text("Buildings: ", 19, (255, 255, 255), (20, 320 - gui_scroll_offset))  
-    render_text("- Power plants", 15, (200, 200, 200), (40, 355 - gui_scroll_offset))  
-    render_text("- Labs", 15, (200, 200, 200), (40, 435 - gui_scroll_offset))  
-    render_text("- Houses", 15, (200, 200, 200), (40, 515 - gui_scroll_offset))  
-    render_text("- Batteries", 15, (200, 200, 200), (40, 595 - gui_scroll_offset))  
-
+    # Render building buttons with lock images and tooltips
     global power_plant_buttons, lab_buttons, house_buttons, battery_buttons
 
-    power_plant_buttons = [render_text("", 19, (255, 255, 255), (60 + i * 50, 380 - gui_scroll_offset), True, (40, 40), (100, 100, 100)) for i in range(5)]  
-    lab_buttons = [render_text("", 19, (255, 255, 255), (60 + i * 50, 460 - gui_scroll_offset), True, (40, 40), (100, 100, 100)) for i in range(3)]  
-    house_buttons = [render_text("", 19, (255, 255, 255), (60 + i * 50, 540 - gui_scroll_offset), True, (40, 40), (100, 100, 100)) for i in range(3)]  
-    battery_buttons = [render_text("", 19, (255, 255, 255), (60 + i * 50, 620 - gui_scroll_offset), True, (40, 40), (100, 100, 100)) for i in range(2)]  
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    tooltip_data = None  # Store tooltip data to render it last
 
+    power_plant_buttons = []
     for i, img in enumerate(power_plant_images):
+        building_name = list(building_mapping.values())[i]
+        rect = render_text("", 19, (255, 255, 255), (60 + i * 50, 380 - gui_scroll_offset), True, (40, 40), (100, 100, 100))
+        power_plant_buttons.append(rect)
         scaled_img = pygame.transform.scale(img, (30, 30))
         screen.blit(scaled_img, (60 + i * 50 + 5, 380 + 10 - gui_scroll_offset))
+        if not building_unlocks[building_name]:
+            screen.blit(lock_image, (60 + i * 50, 380 - gui_scroll_offset))  # Display lock image
+        if rect.collidepoint(mouse_x, mouse_y):
+            tooltip_data = (building_name, (mouse_x + 15, mouse_y + 15))  # Adjust tooltip offset
 
+    lab_buttons = []
     for i, img in enumerate(lab_images):
+        building_name = list(building_mapping.values())[5 + i]  # Adjust index for labs
+        rect = render_text("", 19, (255, 255, 255), (60 + i * 50, 460 - gui_scroll_offset), True, (40, 40), (100, 100, 100))
+        lab_buttons.append(rect)
         scaled_img = pygame.transform.scale(img, (30, 30))
         screen.blit(scaled_img, (60 + i * 50 + 5, 460 + 10 - gui_scroll_offset))
+        if not building_unlocks[building_name]:
+            screen.blit(lock_image, (60 + i * 50, 460 - gui_scroll_offset))  # Display lock image
+        if rect.collidepoint(mouse_x, mouse_y):
+            tooltip_data = (building_name, (mouse_x + 15, mouse_y + 15))  # Adjust tooltip offset
 
+    house_buttons = []
     for i, img in enumerate(house_images):
+        building_name = list(building_mapping.values())[8 + i]
+        rect = render_text("", 19, (255, 255, 255), (60 + i * 50, 540 - gui_scroll_offset), True, (40, 40), (100, 100, 100))
+        house_buttons.append(rect)
         scaled_img = pygame.transform.scale(img, (30, 30))
         screen.blit(scaled_img, (60 + i * 50 + 5, 540 + 10 - gui_scroll_offset))
+        if not building_unlocks[building_name]:
+            screen.blit(lock_image, (60 + i * 50, 540 - gui_scroll_offset))  # Display lock image
+        if rect.collidepoint(mouse_x, mouse_y):
+            tooltip_data = (building_name, (mouse_x + 15, mouse_y + 15))  # Adjust tooltip offset
 
+    battery_buttons = []
     for i, img in enumerate(battery_images):
+        building_name = list(building_mapping.values())[11 + i]
+        rect = render_text("", 19, (255, 255, 255), (60 + i * 50, 620 - gui_scroll_offset), True, (40, 40), (100, 100, 100))
+        battery_buttons.append(rect)
         scaled_img = pygame.transform.scale(img, (30, 30))
         screen.blit(scaled_img, (60 + i * 50 + 5, 620 + 10 - gui_scroll_offset))
+        if not building_unlocks[building_name]:
+            screen.blit(lock_image, (60 + i * 50, 620 - gui_scroll_offset))  # Display lock image
+        if rect.collidepoint(mouse_x, mouse_y):
+            tooltip_data = (building_name, (mouse_x + 15, mouse_y + 15))  # Adjust tooltip offset
 
-    # Handle tooltips for hovering over buttons
-    mouse_x, mouse_y = pygame.mouse.get_pos()
-    button_groups = [
-        (power_plant_buttons, list(building_mapping.values())[:5]),
-        (lab_buttons, list(building_mapping.values())[5:8]),
-        (house_buttons, list(building_mapping.values())[8:11]),
-        (battery_buttons, list(building_mapping.values())[11:]),
-    ]
+    # Render the tooltip last to ensure it appears on top
+    if tooltip_data:
+        render_tooltip(*tooltip_data)
 
-    for buttons, buildings in button_groups:
-        for i, rect in enumerate(buttons):
-            if rect.collidepoint(mouse_x, mouse_y):
-                render_tooltip(buildings[i], (mouse_x + 15, mouse_y), show_cost=True)
-                break
+# Prevent clicks on locked buttons
+def handle_gui_click(mouse_x, mouse_y):
+    global selected_building, show_grid, destroy_mode
+
+    for i, rect in enumerate(power_plant_buttons):
+        if rect.collidepoint(mouse_x, mouse_y):
+            building_name = list(building_mapping.values())[i]
+            if building_unlocks[building_name]:
+                if selected_building == power_plant_images[i]:
+                    selected_building = None
+                    show_grid = False
+                else:
+                    selected_building = power_plant_images[i]
+                    show_grid = True
+                    destroy_mode = False
+            else:
+                print(f"{building_name} is locked. Unlock it via the research tree.")
+            break
+
+    for i, rect in enumerate(lab_buttons):
+        if rect.collidepoint(mouse_x, mouse_y):
+            building_name = list(building_mapping.values())[5 + i]  # Adjust index for labs
+            if building_unlocks[building_name]:
+                if selected_building == lab_images[i]:
+                    selected_building = None
+                    show_grid = False
+                else:
+                    selected_building = lab_images[i]
+                    show_grid = True
+                    destroy_mode = False
+            else:
+                print(f"{building_name} is locked. Unlock it via the research tree.")
+            break
+
+    for i, rect in enumerate(house_buttons):
+        if rect.collidepoint(mouse_x, mouse_y):
+            building_name = list(building_mapping.values())[8 + i]
+            if building_unlocks[building_name]:
+                if selected_building == house_images[i]:
+                    selected_building = None
+                    show_grid = False
+                else:
+                    selected_building = house_images[i]
+                    show_grid = True
+                    destroy_mode = False
+            else:
+                print(f"{building_name} is locked. Unlock it via the research tree.")
+            break
+    
+    for i, rect in enumerate(battery_buttons):
+        if rect.collidepoint(mouse_x, mouse_y):
+            building_name = list(building_mapping.values())[11 + i]
+            if building_unlocks[building_name]:
+                if selected_building == battery_images[i]:
+                    selected_building = None
+                    show_grid = False
+                else:
+                    selected_building = battery_images[i]
+                    show_grid = True
+                    destroy_mode = False
+            else:
+                print(f"{building_name} is locked. Unlock it via the research tree.")
+            break
 
 # Handle block restoration when clicking on a broken building
 def handle_repair(grid_x, grid_y):
-    """Handle repairing of broken buildings."""
     if destroy_mode:
         # Do not allow repairs when destroy mode is active
         return
@@ -1035,7 +1064,6 @@ def handle_repair(grid_x, grid_y):
 
 # Function to unlock a region
 def unlock_region(region_name):
-    """Unlock a region."""
     global money
     if region_name in locked_tiles and locked_tiles[region_name]["locked"]:
         price = locked_tiles[region_name]["price"]
@@ -1050,7 +1078,6 @@ def unlock_region(region_name):
 
 # Function to check if a tile is locked
 def is_tile_locked(grid_x, grid_y):
-    """Check if a tile is locked."""
     for region_name, region_data in locked_tiles.items():
         if region_data["locked"] and (grid_x, grid_y) in region_data["tiles"]:
             return True
@@ -1144,53 +1171,7 @@ while running:
             # Handle GUI button clicks
             if gui_rect.collidepoint(mouse_x, mouse_y):
                 # Process GUI interactions
-                for i, rect in enumerate(power_plant_buttons):
-                    if rect.collidepoint(mouse_x, mouse_y):
-                        if selected_building == power_plant_images[i]:
-                            # Deselect if already selected
-                            selected_building = None
-                            show_grid = False
-                        else:
-                            selected_building = power_plant_images[i]
-                            show_grid = True
-                            destroy_mode = False
-                        break
-
-                for i, rect in enumerate(lab_buttons):
-                    if rect.collidepoint(mouse_x, mouse_y):
-                        if selected_building == lab_images[i]:
-                            # Deselect if already selected
-                            selected_building = None
-                            show_grid = False
-                        else:
-                            selected_building = lab_images[i]
-                            show_grid = True
-                            destroy_mode = False
-                        break
-
-                for i, rect in enumerate(house_buttons):
-                    if rect.collidepoint(mouse_x, mouse_y):
-                        if selected_building == house_images[i]:
-                            # Deselect if already selected
-                            selected_building = None
-                            show_grid = False
-                        else:
-                            selected_building = house_images[i]
-                            show_grid = True
-                            destroy_mode = False
-                        break
-
-                for i, rect in enumerate(battery_buttons):
-                    if rect.collidepoint(mouse_x, mouse_y):
-                        if selected_building == battery_images[i]:
-                            # Deselect if already selected
-                            selected_building = None
-                            show_grid = False
-                        else:
-                            selected_building = battery_images[i]
-                            show_grid = True
-                            destroy_mode = False
-                        break
+                handle_gui_click(mouse_x, mouse_y)
 
             # Handle region unlocking
             if not destroy_mode and not selected_building:  # Allow region purchasing only if not in build or destroy mode
