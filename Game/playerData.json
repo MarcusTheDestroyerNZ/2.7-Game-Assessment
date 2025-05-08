@@ -1,0 +1,63 @@
+{
+    "money": 99999809.5,
+    "research": 9999946150,
+    "upgrades": {
+        "Double Wind Turbine Ticks": true,
+        "Double Wind Turbine Efficiency": false,
+        "Automatically Repair Wind Turbines": false,
+        "Double Solar Panel Ticks": false,
+        "Double Solar Panel Efficiency": true,
+        "Automatically Repair Solar Panels": false,
+        "Double Coal Plant Ticks": true,
+        "Double Coal Plant Efficiency": true,
+        "Automatically Repair Coal Plants": true,
+        "Double Nuclear Plant Ticks": false,
+        "Double Nuclear Plant Efficiency": false,
+        "Automatically Repair Nuclear Plants": false,
+        "Double Fusion Plant Ticks": false,
+        "Double Fusion Plant Efficiency": false,
+        "Automatically Repair Fusion Plants": false,
+        "Unlock Research Lab 1": true,
+        "Unlock Research Lab 2": false,
+        "Unlock Research Lab 3": false,
+        "Unlock House 1": true,
+        "Unlock House 2": false,
+        "Unlock House 3": false,
+        "Unlock Solar Panels": true,
+        "Unlock Coal Plant": true,
+        "Unlock Nuclear Plant": false,
+        "Unlock Fusion Plant": false,
+        "Unlock Battery 1": true,
+        "Unlock Battery 2": true
+    },
+    "placed_blocks": {
+        "9,23": "wind_turbine",
+        "8,22": "wind_turbine",
+        "8,17": "wind_turbine",
+        "7,17": "wind_turbine",
+        "8,16": "wind_turbine",
+        "9,22": "wind_turbine",
+        "9,21": "wind_turbine",
+        "10,21": "wind_turbine",
+        "10,22": "wind_turbine"
+    },
+    "placed_power_plant_ticks": {
+        "9,23": 67,
+        "8,22": 87,
+        "8,17": 0,
+        "7,17": 0,
+        "8,16": 0,
+        "9,22": 0,
+        "9,21": 0,
+        "10,21": 0,
+        "10,22": 0
+    },
+    "unlocked_areas": {
+        "Stewart Island": true,
+        "Southland": true,
+        "Otago": false,
+        "West Coast": false,
+        "Canterbury": false,
+        "Marlborough and Nelson": false
+    }
+}

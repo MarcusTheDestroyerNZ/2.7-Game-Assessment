@@ -3,6 +3,7 @@ import sys
 from pytmx.util_pygame import load_pygame
 import os
 import json
+import math
 
 pygame.init()
 
@@ -61,7 +62,7 @@ battery_images = [
 
 # Load the lock image
 lock_image = pygame.image.load("Assets/lock.png")
-lock_image = pygame.transform.scale(lock_image, (40, 40))  # Scale the lock image to fit the buttons
+lock_image = pygame.transform.scale(lock_image, (40, 40))
 
 # Dynamically load building prices
 building_prices = {building: get_building_stat(building, "price") for building in building_stats[0]}
@@ -120,12 +121,12 @@ selected_building = None
 destroy_mode = False
 
 global money, money_ps, power, max_power, power_ps, research, research_ps, heat, max_heat, heat_pm
-money = 100000
+money = 100000000
 money_ps = 0
 power = 0
 max_power = 50
 power_ps = 0
-research = 100000
+research = 10000000000
 research_ps = 0
 pollution = 0
 max_pollution = 1000
@@ -146,7 +147,17 @@ sell_power_button_rect = None
 placed_power_plant_ticks = {}
 
 # Initialize the auto-repair flag
+global auto_repair_wind_turbines
+global auto_repair_solar_panels
+global auto_repair_coal_plants
+global auto_repair_nuclear_plants
+global auto_repair_fusion_plants
+
 auto_repair_wind_turbines = False
+auto_repair_solar_panels = False
+auto_repair_coal_plants = False
+auto_repair_nuclear_plants = False
+auto_repair_fusion_plants = False
 
 # Percentage of the building cost returned when selling
 sell_percentage = 0.5
@@ -261,7 +272,6 @@ def unlock_building(building_name):
     global building_unlocks
     if building_name in building_unlocks:
         building_unlocks[building_name] = True
-        print(building_unlocks[building_name])
     else:
         print(f"Building {building_name} not found in unlocks.")
 
@@ -279,6 +289,97 @@ research_upgrades = [
         "cost": 50,  
         "currency": "research",  
         "effect": lambda: double_wind_turbine_efficiency(),
+        "purchased": False
+    },
+    {
+        "name": "Automatically Repair Wind Turbines",
+        "cost": 100,  
+        "currency": "research",  
+        "effect": lambda: automatically_repair_wind_turbines(),
+        "purchased": False
+    },
+    {
+        "name": "Double Solar Panel Ticks",
+        "cost": 3500,  
+        "currency": "research",  
+        "effect": lambda: double_solar_panel_ticks(),
+        "purchased": False
+    },
+    {
+        "name": "Double Solar Panel Efficiency",
+        "cost": 6000,
+        "currency": "research",
+        "effect": lambda: double_solar_panel_efficiency(),
+        "purchased": False
+    },
+    {
+        "name": "Automatically Repair Solar Panels",
+        "cost": 10000,  
+        "currency": "research",  
+        "effect": lambda: automatically_repair_solar_panels(),
+        "purchased": False
+    },
+    {
+        "name": "Double Coal Plant Ticks",
+        "cost": 10000,  
+        "currency": "research",  
+        "effect": lambda: double_coal_plant_ticks(),
+        "purchased": False
+    },
+    {
+        "name": "Double Coal Plant Efficiency",
+        "cost": 10000,  
+        "currency": "research",  
+        "effect": lambda: double_coal_plant_efficiency(),
+        "purchased": False
+    },
+    {
+        "name": "Automatically Repair Coal Plants",
+        "cost": 10000,  
+        "currency": "research",  
+        "effect": lambda: automatically_repair_coal_plants(),
+        "purchased": False
+    },
+    {
+        "name": "Double Nuclear Plant Ticks",
+        "cost": 10000,  
+        "currency": "research",  
+        "effect": lambda: double_nuclear_plant_ticks(),
+        "purchased": False
+    },
+    {
+        "name": "Double Nuclear Plant Efficiency",
+        "cost": 10000,  
+        "currency": "research",  
+        "effect": lambda: double_nuclear_plant_efficiency(),
+        "purchased": False
+    },
+    {
+        "name": "Automatically Repair Nuclear Plants",
+        "cost": 10000,  
+        "currency": "research",  
+        "effect": lambda: automatically_repair_nuclear_plants(),
+        "purchased": False
+    },
+    {
+        "name": "Double Fusion Plant Ticks",
+        "cost": 10000,  
+        "currency": "research",  
+        "effect": lambda: double_fusion_plant_ticks(),
+        "purchased": False
+    },
+    {
+        "name": "Double Fusion Plant Efficiency",
+        "cost": 10000,  
+        "currency": "research",  
+        "effect": lambda: double_fusion_plant_efficiency(),
+        "purchased": False
+    },
+    {
+        "name": "Automatically Repair Fusion Plants",
+        "cost": 10000,  
+        "currency": "research",  
+        "effect": lambda: automatically_repair_fusion_plants(),
         "purchased": False
     },
     {
@@ -300,13 +401,6 @@ research_upgrades = [
         "cost": 5000,
         "currency": "research",
         "effect": lambda: unlock_building("lab3"),
-        "purchased": False
-    },
-    {
-        "name": "Automatically Repair Wind Turbines",
-        "cost": 100,  
-        "currency": "research",  
-        "effect": lambda: automatically_repair_wind_turbines(),
         "purchased": False
     },
     {
@@ -338,17 +432,38 @@ research_upgrades = [
         "purchased": False
     },
     {
-        "name": "Double Solar Panel Ticks",
-        "cost": 5000,  
+        "name": "Unlock Coal Plant",
+        "cost": 15000,  
         "currency": "research",  
-        "effect": lambda: double_solar_panel_ticks(),
+        "effect": lambda: unlock_building("coal_plant"),
         "purchased": False
     },
     {
-        "name": "Double Solar Panel Efficiency",
-        "cost": 10000,
+        "name": "Unlock Nuclear Plant",
+        "cost": 1000,  
+        "currency": "research",  
+        "effect": lambda: unlock_building("nuclear_plant"),
+        "purchased": False
+    },
+    {
+        "name": "Unlock Fusion Plant",
+        "cost": 1000,  
+        "currency": "research",  
+        "effect": lambda: unlock_building("fusion_plant"),
+        "purchased": False
+    },
+    {
+        "name": "Unlock Battery 1",
+        "cost": 350,
         "currency": "research",
-        "effect": lambda: double_solar_panel_efficiency(),
+        "effect": lambda: unlock_building("battery1"),
+        "purchased": False
+    },
+    {
+        "name": "Unlock Battery 2",
+        "cost": 1250,
+        "currency": "research",
+        "effect": lambda: unlock_building("battery2"),
         "purchased": False
     }
 ]
@@ -368,20 +483,53 @@ tree_layout = [
     [
         {"name": "Unlock Solar Panels", "x": 1000, "y": 100, "image": power_plant_images[1], "unlocks": ["Double Solar Panel Ticks", "Double Solar Panel Efficiency"]},
         {"name": "Unlock Research Lab 2", "x": 1000, "y": 300, "image": lab_images[1], "unlocks": ["Unlock Research Lab 3"]},
-        {"name": "Unlock House 1", "x": 1000, "y": 500, "image": house_images[0], "unlocks": ["Unlock House 2"]},
+        {"name": "Unlock House 1", "x": 1000, "y": 500, "image": house_images[0], "unlocks": ["Unlock House 2", "Unlock Battery 1"]},
         {"name": "Automatically Repair Wind Turbines", "x": 1000, "y": 700, "image": power_plant_images[0], "unlocks": []},
     ],
     # 4th node row
     [
-        {"name": "Double Solar Panel Ticks", "x": 1500, "y": -100, "image": power_plant_images[1], "unlocks": []},
-        {"name": "Double Solar Panel Efficiency", "x": 1500, "y": 100, "image": power_plant_images[1], "unlocks": []},
+        {"name": "Double Solar Panel Ticks", "x": 1500, "y": -100, "image": power_plant_images[1], "unlocks": ["Automatically Repair Solar Panels"]},
+        {"name": "Double Solar Panel Efficiency", "x": 1500, "y": 100, "image": power_plant_images[1], "unlocks": ["Unlock Coal Plant"]},
         {"name": "Unlock Research Lab 3", "x": 1500, "y": 300, "image": lab_images[2], "unlocks": []},
         {"name": "Unlock House 2", "x": 1500, "y": 500, "image": house_images[1], "unlocks": ["Unlock House 3"]},
+        {"name": "Unlock Battery 1", "x": 1500, "y": 700, "image": battery_images[0], "unlocks": ["Unlock Battery 2"]},
     ],
     # 5th node row
     [
+        {"name": "Automatically Repair Solar Panels", "x": 2000, "y": -100, "image": power_plant_images[1], "unlocks": []},
+        {"name": "Unlock Coal Plant", "x": 2000, "y": 100, "image": power_plant_images[2], "unlocks": ["Double Coal Plant Ticks", "Double Coal Plant Efficiency"]},
         {"name": "Unlock House 3", "x": 2000, "y": 500, "image": house_images[2], "unlocks": []},
+        {"name": "Unlock Battery 2", "x": 2000, "y": 700, "image": battery_images[1], "unlocks": []},
     ],
+    # 6th node row
+    [
+        {"name": "Double Coal Plant Ticks", "x": 2500, "y": -100, "image": power_plant_images[2], "unlocks": ["Automatically Repair Coal Plants"]},
+        {"name": "Double Coal Plant Efficiency", "x": 2500, "y": 100, "image": power_plant_images[2], "unlocks": ["Unlock Nuclear Plant"]},
+    ],
+    # 7th node row
+    [
+        {"name": "Automatically Repair Coal Plants", "x": 3000, "y": -100, "image": power_plant_images[2], "unlocks": []},
+        {"name": "Unlock Nuclear Plant", "x": 3000, "y": 100, "image": power_plant_images[3], "unlocks": ["Double Nuclear Plant Ticks", "Double Nuclear Plant Efficiency"]},
+    ],
+    # 8th node row
+    [
+        {"name": "Double Nuclear Plant Ticks", "x": 3500, "y": -100, "image": power_plant_images[3], "unlocks": ["Automatically Repair Nuclear Plants"]},
+        {"name": "Double Nuclear Plant Efficiency", "x": 3500, "y": 100, "image": power_plant_images[3], "unlocks": ["Unlock Fusion Plant"]},
+    ],
+    # 9th node row
+    [
+        {"name": "Automatically Repair Nuclear Plants", "x": 4000, "y": -100, "image": power_plant_images[3], "unlocks": []},
+        {"name": "Unlock Fusion Plant", "x": 4000, "y": 100, "image": power_plant_images[4], "unlocks": ["Double Fusion Plant Ticks", "Double Fusion Plant Efficiency"]},
+    ],
+    # 10th node row
+    [
+        {"name": "Double Fusion Plant Ticks", "x": 4500, "y": -100, "image": power_plant_images[4], "unlocks": ["Automatically Repair Fusion Plants"]},
+        {"name": "Double Fusion Plant Efficiency", "x": 4500, "y": 100, "image": power_plant_images[4], "unlocks": []},
+    ],
+    # 11th node row
+    [
+        {"name": "Automatically Repair Fusion Plants", "x": 5000, "y": -100, "image": power_plant_images[4], "unlocks": []},
+    ]
 ]
 
 # Function to double wind turbine ticks
@@ -409,6 +557,56 @@ def double_solar_panel_efficiency():
     global power_per_second
     power_per_second["solar_panel"] *= 2
 
+# Function to automatically repair solar panels
+def automatically_repair_solar_panels():
+    global auto_repair_solar_panels
+    auto_repair_solar_panels = True
+
+# Function to double coal plant ticks
+def double_coal_plant_ticks():
+    global power_plant_ticks
+    power_plant_ticks["coal_plant"] *= 2
+
+# Function to double coal plant efficiency
+def double_coal_plant_efficiency():
+    global power_per_second
+    power_per_second["coal_plant"] *= 2
+
+# Function to automatically repair coal plants
+def automatically_repair_coal_plants():
+    global auto_repair_coal_plants
+    auto_repair_coal_plants = True
+
+# Function to double nuclear plant ticks
+def double_nuclear_plant_ticks():
+    global power_plant_ticks
+    power_plant_ticks["nuclear_plant"] *= 2
+
+# Function to double nuclear plant efficiency
+def double_nuclear_plant_efficiency():
+    global power_per_second
+    power_per_second["nuclear_plant"] *= 2
+
+# Function to automatically repair nuclear plants
+def automatically_repair_nuclear_plants():
+    global auto_repair_nuclear_plants
+    auto_repair_nuclear_plants = True
+
+# Function to double fusion plant ticks
+def double_fusion_plant_ticks():
+    global power_plant_ticks
+    power_plant_ticks["fusion_plant"] *= 2
+
+# Function to double fusion plant efficiency
+def double_fusion_plant_efficiency():
+    global power_per_second
+    power_per_second["fusion_plant"] *= 2
+
+# Function to automatically repair fusion plants
+def automatically_repair_fusion_plants():
+    global auto_repair_fusion_plants
+    auto_repair_fusion_plants = True
+
 # Variables for research tree movement and zoom
 research_tree_offset_x = 100
 research_tree_offset_y = 250
@@ -421,6 +619,55 @@ max_research_tree_zoom = 0.7
 
 # Load the custom font
 custom_font = pygame.font.Font("Assets/font.ttf", 24)
+
+# Save player data to a JSON file
+def save_player_data():
+    player_data = {
+        "money": money,
+        "research": research,
+        "upgrades": {upgrade["name"]: upgrade["purchased"] for upgrade in research_upgrades},
+        "placed_blocks": {
+            f"{grid_x},{grid_y}": building_mapping[block_image]
+            for (grid_x, grid_y), block_image in placed_blocks.items()
+        },
+        "placed_power_plant_ticks": {
+            f"{grid_x},{grid_y}": ticks
+            for (grid_x, grid_y), ticks in placed_power_plant_ticks.items()
+        },
+        "unlocked_areas": {
+            region_name: not region_data["locked"]
+            for region_name, region_data in locked_tiles.items()
+        }
+    }
+    with open("playerData.json", "w") as f:
+        json.dump(player_data, f, indent=4)
+
+# Load player data from a JSON file
+def load_player_data():
+    global money, research, placed_blocks, placed_power_plant_ticks, locked_tiles
+    try:
+        with open("playerData.json", "r") as f:
+            player_data = json.load(f)
+            money = player_data.get("money", money)
+            research = player_data.get("research", research)
+            for upgrade in research_upgrades:
+                upgrade["purchased"] = player_data.get("upgrades", {}).get(upgrade["name"], upgrade["purchased"])
+            placed_blocks = {
+                tuple(map(int, key.split(","))): next(
+                    img for img, name in building_mapping.items() if name == value
+                )
+                for key, value in player_data.get("placed_blocks", {}).items()
+            }
+            placed_power_plant_ticks = {
+                tuple(map(int, key.split(","))): ticks
+                for key, ticks in player_data.get("placed_power_plant_ticks", {}).items()
+            }
+            unlocked_areas = player_data.get("unlocked_areas", {})
+            for region_name, unlocked in unlocked_areas.items():
+                if region_name in locked_tiles:
+                    locked_tiles[region_name]["locked"] = not unlocked
+    except FileNotFoundError:
+        print("No saved player data found. Starting a new game.")
 
 # Function to render the research tree GUI
 def render_research_tree():
@@ -435,7 +682,7 @@ def render_research_tree():
     render_text("Research Tree", 43, (255, 255, 255), (new_screen_width // 2 - 150, 50))  
     back_button_rect = render_text("< Back", 15, (255, 255, 255), (new_screen_width - 1100, 45), True, (100, 40), (100, 100, 100))  
     render_text(f"Research Points: {research}", 15, (255, 255, 255), (20, 140))  
-    render_text(f"Money: ${round(money, 1)}", 15, (255, 255, 255), (20, 160))  
+    render_text(f"Money: ${money}", 15, (255, 255, 255), (20, 160))  
 
     # Draw connections between nodes
     for i in range(len(tree_layout)):
@@ -454,11 +701,11 @@ def render_research_tree():
                                     if prereq["name"] in [n["name"] for t in tree_layout for n in t if next_node["name"] in n["unlocks"]]
                                 )
                                 if upgrade["purchased"]:
-                                    line_color = (0, 200, 0)  # Green for purchased
+                                    line_color = (0, 100, 250)  # Blue for purchased
                                 elif prerequisites_met:
-                                    line_color = (0, 255, 0)  # Bright green for unlockable
+                                    line_color = (0, 200, 0)  # Bright green for unlockable
                                 else:
-                                    line_color = (255, 0, 0)  # Red for locked
+                                    line_color = (125, 50, 50)  # Red tint for locked
 
                                 # Calculate the start and end points of the line
                                 start_x = node["x"] * research_tree_zoom + research_tree_offset_x + (300 * research_tree_zoom)  # right side of the left node
@@ -489,11 +736,11 @@ def render_research_tree():
                 )
                 affordable = (money >= upgrade["cost"] if upgrade["currency"] == "money" else research >= upgrade["cost"])
                 if upgrade["purchased"]:
-                    button_color = (0, 200, 0)  # Green for purchased
+                    button_color = (0, 100, 250)  # Blue for purchased
                 elif affordable and prerequisites_met:
-                    button_color = (0, 255, 0)  # Bright green for unlockable
+                    button_color = (0, 200, 0)  # Bright green for unlockable
                 else:
-                    button_color = (100, 100, 100)  # Grey for locked
+                    button_color = (115, 100, 100)  # Red tint for locked
                 button_rect = pygame.Rect(
                     node["x"] * research_tree_zoom + research_tree_offset_x,
                     node["y"] * research_tree_zoom + research_tree_offset_y,
@@ -521,7 +768,7 @@ def render_research_tree():
                 # Display the name and cost on the right
                 render_text(
                     node["name"],
-                    int(5 * research_tree_zoom),  
+                    int(5 * research_tree_zoom),  # Dynamically scale font size
                     (255, 255, 255),
                     (
                         node["x"] * research_tree_zoom + 100 * research_tree_zoom + research_tree_offset_x,  # Adjust position with zoom
@@ -531,7 +778,7 @@ def render_research_tree():
 
                 render_text(
                     f"Cost: {'$' if upgrade['currency'] == "money" else ''} {upgrade['cost']} {'RP' if upgrade['currency'] == "research" else ''}",
-                    int(5 * research_tree_zoom),  
+                    int(10 * research_tree_zoom),  # Dynamically scale font size
                     (255, 255, 255),
                     (
                         node["x"] * research_tree_zoom + 100 * research_tree_zoom + research_tree_offset_x,  # Adjust position with zoom
@@ -790,12 +1037,19 @@ def update_power():
 
                 # Decrease the tick counter
                 placed_power_plant_ticks[(grid_x, grid_y)] -= 1
-            elif building_name == "wind_turbine" and auto_repair_wind_turbines:
-                # Automatically repair wind turbines if the upgrade is active
+            elif ((building_name == "wind_turbine" and auto_repair_wind_turbines) or
+            (building_name == "solar_panel" and auto_repair_solar_panels) or
+            (building_name == "coal_plant" and auto_repair_coal_plants) or
+            (building_name == "nuclear_plant" and auto_repair_nuclear_plants) or
+            (building_name == "fusion_plant" and auto_repair_fusion_plants)):
+                # Automatically repair if the upgrade is active
                 repair_cost = max(1, int(building_prices[building_name] * repair_cost_percentage))
+                money = round(money, 2)
                 if money >= repair_cost:
                     money -= repair_cost
                     placed_power_plant_ticks[(grid_x, grid_y)] = power_plant_ticks[building_name]
+
+            
 
     power += added_power
     power_ps = round(added_power, 2)
@@ -820,6 +1074,7 @@ def update_money():
         power = 0
 
     money += earned_money
+    money = round(money, 2)
     money_ps = round(earned_money, 2)
 
 # Function to format building names for tooltips
@@ -902,16 +1157,38 @@ def render_gui():
     pygame.draw.rect(screen, (50, 50, 50), gui_rect)
 
     global destroy_button_rect, research_button_rect, sell_power_button_rect
-
+    
     # Render resource stats
-    render_text(f"Money: ${round(money, 2)}", 15, (255, 255, 255), (20, 20 - gui_scroll_offset))
-    render_text(f"Power: {round(power, 2)} MW / {max_power} MW", 15, (255, 255, 255), (20, 50 - gui_scroll_offset))
-    render_text(f"Research: {round(research, 2)} RP", 15, (255, 255, 255), (20, 80 - gui_scroll_offset))
+    if money_ps == 0:
+        render_text(f"Money: ${round(money, 2)}", 12, (255, 255, 255), (20, 20 - gui_scroll_offset))  
+    else:
+        render_text(f"Money: ${round(money, 2)} + {round(money_ps, 2)}/s", 12, (255, 255, 255), (20, 20 - gui_scroll_offset))  
+
+    if power_ps == 0:
+        render_text(f"Power: {round(power, 2)} MW / {max_power} MW", 12, (255, 255, 255), (20, 50 - gui_scroll_offset))  
+    else:
+        render_text(f"Power: {round(power, 2)} MW / {max_power} MW + {round(power_ps, 2)}/s", 12, (255, 255, 255), (20, 50 - gui_scroll_offset))  
+
+    if research_ps == 0:
+        render_text(f"Research: {round(research, 2)} RP", 12, (255, 255, 255), (20, 80 - gui_scroll_offset))  
+    else:
+        render_text(f"Research: {round(research, 2)} RP + {round(research_ps, 2)}/s", 12, (255, 255, 255), (20, 80 - gui_scroll_offset))
+
+    if pollution_ps == 0:
+        render_text(f"Pollution: {round(pollution, 2)} / {max_pollution}", 12, (255, 255, 255), (20, 110 - gui_scroll_offset))  
+    else:
+        render_text(f"Pollution: {round(pollution, 2)} / {max_pollution} + {round(pollution_ps, 2)}/s", 12, (255, 255, 255), (20, 110 - gui_scroll_offset))    
 
     # Render buttons
     research_button_rect = render_text("Research", 10, (255, 255, 255), (20, 180 - gui_scroll_offset), True, (120, 35), (100, 100, 100))
     destroy_button_rect = render_text("Destroy: ON" if destroy_mode else "Destroy: OFF", 10, (255, 255, 255), (20, 220 - gui_scroll_offset), True, (120, 35), (100, 100, 100))
     sell_power_button_rect = render_text("Sell Power", 10, (255, 255, 255), (20, 260 - gui_scroll_offset), True, (120, 35), (100, 100, 100))
+
+    render_text("Buildings: ", 19, (255, 255, 255), (20, 320 - gui_scroll_offset))  
+    render_text("- Power plants", 15, (200, 200, 200), (40, 355 - gui_scroll_offset))  
+    render_text("- Labs", 15, (200, 200, 200), (40, 435 - gui_scroll_offset))  
+    render_text("- Houses", 15, (200, 200, 200), (40, 515 - gui_scroll_offset))  
+    render_text("- Batteries", 15, (200, 200, 200), (40, 595 - gui_scroll_offset))  
 
     # Render building buttons with lock images and tooltips
     global power_plant_buttons, lab_buttons, house_buttons, battery_buttons
@@ -929,7 +1206,7 @@ def render_gui():
         if not building_unlocks[building_name]:
             screen.blit(lock_image, (60 + i * 50, 380 - gui_scroll_offset))  # Display lock image
         if rect.collidepoint(mouse_x, mouse_y):
-            tooltip_data = (building_name, (mouse_x + 15, mouse_y + 15))  # Adjust tooltip offset
+            tooltip_data = (building_name, (mouse_x + 15, mouse_y + 15), building_prices[building_name])  # Adjust tooltip offset
 
     lab_buttons = []
     for i, img in enumerate(lab_images):
@@ -969,7 +1246,7 @@ def render_gui():
 
     # Render the tooltip last to ensure it appears on top
     if tooltip_data:
-        render_tooltip(*tooltip_data)
+        render_tooltip(tooltip_data[0], (tooltip_data[1][0] + 15, tooltip_data[1][1] + 15), show_cost=True)
 
 # Prevent clicks on locked buttons
 def handle_gui_click(mouse_x, mouse_y):
@@ -1061,6 +1338,8 @@ def handle_repair(grid_x, grid_y):
 
                 repair_sound1.play()
                 repair_sound2.play()
+            else:
+                print(money)
 
 # Function to unlock a region
 def unlock_region(region_name):
@@ -1082,6 +1361,9 @@ def is_tile_locked(grid_x, grid_y):
         if region_data["locked"] and (grid_x, grid_y) in region_data["tiles"]:
             return True
     return False
+
+# Load player data at the start of the game
+load_player_data()
 
 # Main game loop
 running = True
@@ -1134,7 +1416,9 @@ while running:
     for event in pygame.event.get():
         # Handle quitting the game
         if event.type == pygame.QUIT:
+            save_player_data()  # Save data when quitting
             running = False
+
 
         elif research_tree_open and event.type == pygame.MOUSEBUTTONDOWN:
             # Handle clicks only for the research tree when it is open
@@ -1325,6 +1609,10 @@ while running:
         update_research()
         update_power()
         update_money()
+
+    # Save data periodically (e.g., every 10 seconds)
+    if current_time - last_tick >= 10000:  # 10 seconds
+        save_player_data()
 
     pygame.display.flip()
 
