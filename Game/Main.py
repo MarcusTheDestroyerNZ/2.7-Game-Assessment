@@ -3,7 +3,6 @@ import sys
 from pytmx.util_pygame import load_pygame
 import os
 import json
-import math
 
 pygame.init()
 
@@ -121,12 +120,12 @@ selected_building = None
 destroy_mode = False
 
 global money, money_ps, power, max_power, power_ps, research, research_ps, heat, max_heat, heat_pm
-money = 100000000
+money = 1
 money_ps = 0
 power = 0
 max_power = 50
 power_ps = 0
-research = 10000000000
+research = 0
 research_ps = 0
 pollution = 0
 max_pollution = 1000
@@ -625,6 +624,7 @@ def save_player_data():
     player_data = {
         "money": money,
         "research": research,
+        "power": power,  # Save the current power value
         "upgrades": {upgrade["name"]: upgrade["purchased"] for upgrade in research_upgrades},
         "placed_blocks": {
             f"{grid_x},{grid_y}": building_mapping[block_image]
@@ -644,12 +644,17 @@ def save_player_data():
 
 # Load player data from a JSON file
 def load_player_data():
-    global money, research, placed_blocks, placed_power_plant_ticks, locked_tiles
+    global money, research, power, placed_blocks, placed_power_plant_ticks, locked_tiles
     try:
         with open("playerData.json", "r") as f:
             player_data = json.load(f)
+            if not player_data:  # Check if the file is empty or contains no data
+                print("Empty save file detected. Starting a new game.")
+                return  # Use default values for a new game
+
             money = player_data.get("money", money)
             research = player_data.get("research", research)
+            power = player_data.get("power", power)  # Load the saved power value
             for upgrade in research_upgrades:
                 upgrade["purchased"] = player_data.get("upgrades", {}).get(upgrade["name"], upgrade["purchased"])
             placed_blocks = {
@@ -666,8 +671,8 @@ def load_player_data():
             for region_name, unlocked in unlocked_areas.items():
                 if region_name in locked_tiles:
                     locked_tiles[region_name]["locked"] = not unlocked
-    except FileNotFoundError:
-        print("No saved player data found. Starting a new game.")
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("No valid save file found. Starting a new game.")
 
 # Function to render the research tree GUI
 def render_research_tree():
@@ -680,7 +685,7 @@ def render_research_tree():
 
     # Render title, back button, and resource displays
     render_text("Research Tree", 43, (255, 255, 255), (new_screen_width // 2 - 150, 50))  
-    back_button_rect = render_text("< Back", 15, (255, 255, 255), (new_screen_width - 1100, 45), True, (100, 40), (100, 100, 100))  
+    back_button_rect = render_text("< Back", 15, (255, 255, 255), (new_screen_width - (new_screen_width / 1.1), 45), True, (100, 40), (100, 100, 100))  
     render_text(f"Research Points: {research}", 15, (255, 255, 255), (20, 140))  
     render_text(f"Money: ${money}", 15, (255, 255, 255), (20, 160))  
 
@@ -777,7 +782,7 @@ def render_research_tree():
                 )
 
                 render_text(
-                    f"Cost: {'$' if upgrade['currency'] == "money" else ''} {upgrade['cost']} {'RP' if upgrade['currency'] == "research" else ''}",
+                    f"Cost: {'$' if upgrade['currency'] == 'money' else ''} {upgrade['cost']} {'RP' if upgrade['currency'] == 'research' else ''}",
                     int(10 * research_tree_zoom),  # Dynamically scale font size
                     (255, 255, 255),
                     (
