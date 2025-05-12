@@ -657,6 +657,9 @@ def load_player_data():
             power = player_data.get("power", power)  # Load the saved power value
             for upgrade in research_upgrades:
                 upgrade["purchased"] = player_data.get("upgrades", {}).get(upgrade["name"], upgrade["purchased"])
+                # Apply the effect if the upgrade is purchased
+                if upgrade["purchased"]:
+                    upgrade["effect"]()
             placed_blocks = {
                 tuple(map(int, key.split(","))): next(
                     img for img, name in building_mapping.items() if name == value
