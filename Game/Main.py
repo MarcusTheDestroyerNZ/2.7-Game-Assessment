@@ -3,8 +3,12 @@ import sys
 from pytmx.util_pygame import load_pygame
 import os
 import json
+import datetime
 
 pygame.init()
+
+now = datetime.datetime.now()
+print(now.strftime("%d-%m-%Y %H:%M:%S"))
 
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 screen_width = 1200
@@ -119,7 +123,7 @@ destroy_button_rect = None
 selected_building = None
 destroy_mode = False
 
-global money, money_ps, power, max_power, power_ps, research, research_ps, heat, max_heat, heat_pm
+global money, money_ps, power, max_power, power_ps, research, research_ps, offline_percentage
 money = 1
 money_ps = 0
 power = 0
@@ -161,6 +165,7 @@ auto_repair_fusion_plants = False
 # Percentage of the building cost returned when selling
 sell_percentage = 0.5
 repair_cost_percentage = 0.5
+offline_percentage = 0.25
 
 # Define locked tiles for each region (manually assign tiles here)
 locked_tiles = {
@@ -621,10 +626,15 @@ custom_font = pygame.font.Font("Assets/font.ttf", 24)
 
 # Save player data to a JSON file
 def save_player_data():
+    print(now.strftime("%d-%m-%Y %H:%M:%S")),
     player_data = {
+        "time_logged_out": now.strftime("%d-%m-%Y %H:%M:%S"),
         "money": money,
         "research": research,
-        "power": power,  # Save the current power value
+        "power": power,
+        "max_power": max_power,
+        "money_ps": money_ps,
+        "research_ps": research_ps,
         "upgrades": {upgrade["name"]: upgrade["purchased"] for upgrade in research_upgrades},
         "placed_blocks": {
             f"{grid_x},{grid_y}": building_mapping[block_image]
@@ -644,38 +654,171 @@ def save_player_data():
 
 # Load player data from a JSON file
 def load_player_data():
-    global money, research, power, placed_blocks, placed_power_plant_ticks, locked_tiles
+    global money, research, power, max_power, placed_blocks, placed_power_plant_ticks, locked_tiles, idle_seconds, money_ps, research_ps
     try:
         with open("playerData.json", "r") as f:
             player_data = json.load(f)
-            if not player_data:  # Check if the file is empty or contains no data
+            if not player_data:
                 print("Empty save file detected. Starting a new game.")
-                return  # Use default values for a new game
+                return
 
+            # First load the basic variables
             money = player_data.get("money", money)
             research = player_data.get("research", research)
-            power = player_data.get("power", power)  # Load the saved power value
+            power = player_data.get("power", power)
+            max_power = player_data.get("max_power", max_power)
+            money_ps = player_data.get("money_ps", money_ps)
+            research_ps = player_data.get("research_ps", research_ps)
+
+            # Apply research upgrades first to ensure correct building stats
             for upgrade in research_upgrades:
                 upgrade["purchased"] = player_data.get("upgrades", {}).get(upgrade["name"], upgrade["purchased"])
-                # Apply the effect if the upgrade is purchased
                 if upgrade["purchased"]:
                     upgrade["effect"]()
-            placed_blocks = {
-                tuple(map(int, key.split(","))): next(
-                    img for img, name in building_mapping.items() if name == value
-                )
-                for key, value in player_data.get("placed_blocks", {}).items()
-            }
-            placed_power_plant_ticks = {
-                tuple(map(int, key.split(","))): ticks
-                for key, ticks in player_data.get("placed_power_plant_ticks", {}).items()
-            }
+
+            # Then load the placed buildings
+            saved_blocks = player_data.get("placed_blocks", {})
+            placed_blocks.clear()  # Clear existing blocks
+            
+            for pos_str, building_name in saved_blocks.items():
+                try:
+                    # Convert string coordinates to tuple
+                    grid_x, grid_y = map(int, pos_str.split(","))
+                    # Find the corresponding image
+                    for img, name in building_mapping.items():
+                        if name == building_name:
+                            placed_blocks[(grid_x, grid_y)] = img
+                            break
+                except Exception as e:
+                    print(f"Error loading building at {pos_str}: {e}")
+
+            # Load power plant ticks after buildings are placed
+            saved_ticks = player_data.get("placed_power_plant_ticks", {})
+            placed_power_plant_ticks.clear()  # Clear existing ticks
+            
+            for pos_str, ticks in saved_ticks.items():
+                try:
+                    grid_x, grid_y = map(int, pos_str.split(","))
+                    placed_power_plant_ticks[(grid_x, grid_y)] = ticks
+                except Exception as e:
+                    print(f"Error loading ticks at {pos_str}: {e}")
+
+            # Calculate idle time after everything else is loaded
+            time_logged_out = player_data.get("time_logged_out", now.strftime("%d-%m-%Y %H:%M:%S"))
+            idle_seconds = calculate_time_difference(time_logged_out, now.strftime("%d-%m-%Y %H:%M:%S"))
+            
+            # Load unlocked areas last
             unlocked_areas = player_data.get("unlocked_areas", {})
             for region_name, unlocked in unlocked_areas.items():
                 if region_name in locked_tiles:
                     locked_tiles[region_name]["locked"] = not unlocked
-    except (FileNotFoundError, json.JSONDecodeError):
-        print("No valid save file found. Starting a new game.")
+
+            print(f"Successfully loaded save file with {len(placed_blocks)} buildings")
+            print(idle_reward())
+
+    except FileNotFoundError:
+        print("No save file found. Starting a new game.")
+    except json.JSONDecodeError:
+        print("Save file corrupted. Starting a new game.")
+    except Exception as e:
+        print(f"Error loading save file: {e}")
+        print("Starting a new game.")
+    
+def calculate_time_difference(start_time, end_time):
+    # Convert string timestamps to datetime objects
+    start = datetime.datetime.strptime(start_time, "%d-%m-%Y %H:%M:%S")
+    end = datetime.datetime.strptime(end_time, "%d-%m-%Y %H:%M:%S")
+    
+    # Calculate time difference
+    time_difference = end - start
+    
+    # Get total seconds
+    seconds_difference = time_difference.total_seconds()
+
+    if seconds_difference > 0:
+        return seconds_difference
+    else:
+        print("DONT TAMPER WITH THE TIME!")
+        return 0
+    
+def idle_reward():
+    global money, research, money_ps, research_ps, idle_seconds, power, placed_power_plant_ticks
+    
+    ticks_passed = int(idle_seconds)
+    offline_money = 0
+    offline_research = 0
+    offline_power = 0
+    
+    # First calculate total power generation for this tick
+    for (grid_x, grid_y), block_image in list(placed_blocks.items()):
+        building_name = building_mapping[block_image]
+        
+        if building_name in power_plant_ticks:
+            current_ticks = placed_power_plant_ticks.get((grid_x, grid_y), 0)
+            building_max_ticks = power_plant_ticks[building_name]
+
+            if current_ticks > 0:
+                productive_seconds = min(current_ticks, ticks_passed)
+                if building_name in power_per_second:
+                    offline_power += power_per_second[building_name] * productive_seconds * offline_percentage
+                
+                remaining_ticks = max(0, current_ticks - ticks_passed)
+                placed_power_plant_ticks[(grid_x, grid_y)] = remaining_ticks
+
+                # Handle auto-repairs
+                if remaining_ticks == 0:
+                    auto_repair_enabled = (
+                        (building_name == "wind_turbine" and auto_repair_wind_turbines) or
+                        (building_name == "solar_panel" and auto_repair_solar_panels) or
+                        (building_name == "coal_plant" and auto_repair_coal_plants) or
+                        (building_name == "nuclear_plant" and auto_repair_nuclear_plants) or
+                        (building_name == "fusion_plant" and auto_repair_fusion_plants)
+                    )
+
+                    if auto_repair_enabled:
+                        remaining_time = ticks_passed - productive_seconds
+                        if remaining_time > 0:
+                            repairs_needed = remaining_time // building_max_ticks
+                            repair_cost = building_prices[building_name] * repair_cost_percentage
+                            total_repair_cost = repair_cost * repairs_needed
+                            
+                            if offline_money >= total_repair_cost and repairs_needed > 0:
+                                offline_money -= total_repair_cost
+                                complete_cycles = repairs_needed * building_max_ticks
+                                offline_power += power_per_second[building_name] * complete_cycles * offline_percentage
+                                
+                                final_ticks = building_max_ticks - (remaining_time % building_max_ticks)
+                                placed_power_plant_ticks[(grid_x, grid_y)] = final_ticks
+                            elif money >= total_repair_cost and repairs_needed > 0:
+                                money -= total_repair_cost
+                                complete_cycles = repairs_needed * building_max_ticks
+                                offline_power += power_per_second[building_name] * complete_cycles * offline_percentage
+                                
+                                final_ticks = building_max_ticks - (remaining_time % building_max_ticks)
+                                placed_power_plant_ticks[(grid_x, grid_y)] = final_ticks
+        
+        # Handle labs (these work independently of power)
+        elif building_name in research_per_second:
+            earned = research_per_second[building_name] * ticks_passed * offline_percentage
+            offline_research += earned
+
+    # Now process houses after we know how much power was generated
+    required_power = 0
+    for (grid_x, grid_y), block_image in placed_blocks.items():
+        building_name = building_mapping[block_image]
+        if building_name in money_per_second:
+            required_power += money_per_second[building_name]
+
+    # Convert available power to money through houses
+    if offline_power >= required_power:
+        offline_money += required_power * ticks_passed * offline_percentage
+    else:
+        offline_money += offline_power * ticks_passed * offline_percentage
+    
+    money += offline_money
+    research += offline_research
+    
+    return f" You were away for {idle_seconds} seconds and earned ${round(offline_money, 2)} and {round(offline_research, 2)} research points while away!"
 
 # Function to render the research tree GUI
 def render_research_tree():
@@ -785,7 +928,7 @@ def render_research_tree():
                 )
 
                 render_text(
-                    f"Cost: {'$' if upgrade['currency'] == 'money' else ''} {upgrade['cost']} {'RP' if upgrade['currency'] == 'research' else ''}",
+                    f"Cost: {'$' if upgrade['currency'] == "money" else ''} {upgrade['cost']} {'RP' if upgrade['currency'] == "research" else ''}",
                     int(10 * research_tree_zoom),  # Dynamically scale font size
                     (255, 255, 255),
                     (
