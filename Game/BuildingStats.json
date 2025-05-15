@@ -1,0 +1,72 @@
+{
+    "wind_turbine": {
+        "power_per_second": 0.15,
+        "ticks": 10,
+        "image_path": "Assets/wind_turbine.png",
+        "price": 1 
+    },
+    "solar_panel": {
+        "power_per_second": 3,
+        "ticks": 100,
+        "image_path": "Assets/solar_panel.png",
+        "price": 200
+    },
+    "coal_plant": {
+        "power_per_second": 200,
+        "ticks": 300,
+        "image_path": "Assets/coal_plant.png",
+        "price": 20000 
+    },
+    "nuclear_plant": {
+        "power_per_second": 500,
+        "ticks": 800,
+        "image_path": "Assets/nuclear_plant.png",
+        "price": 250000
+    }, 
+    "fusion_plant": {
+        "power_per_second": 10000,
+        "ticks": 1200,
+        "image_path": "Assets/fusion_plant.png",
+        "price": 15000000 
+    },
+    "lab1": {
+        "research_per_second": 1,
+        "image_path": "Assets/lab1.png",
+        "price": 100
+    }, 
+    "lab2": {
+        "research_per_second": 25,
+        "image_path": "Assets/wind_turbine.png",
+        "price": 10000 
+    },
+    "lab3": {
+        "research_per_second": 100,
+        "image_path": "Assets/wind_turbine.png",
+        "price": 35000
+    }, 
+    "house1": {
+        "money_per_second": 5,
+        "image_path": "Assets/wind_turbine.png",
+        "price": 50
+    }, 
+    "house2": {
+        "money_per_second": 100,
+        "image_path": "Assets/wind_turbine.png",
+        "price": 1000
+    },
+    "house3": {
+        "money_per_second": 10000,
+        "image_path": "Assets/wind_turbine.png",
+        "price": 100000 
+    },
+    "battery1": {
+        "capacity": 100,
+        "image_path": "Assets/wind_turbine.png",
+        "price": 100 
+    },
+    "battery2": {
+        "capacity": 10000,
+        "image_path": "Assets/wind_turbine.png",
+        "price": 10000 
+    }
+}

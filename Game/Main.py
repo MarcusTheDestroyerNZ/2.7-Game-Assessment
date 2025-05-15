@@ -4,6 +4,8 @@ from pytmx.util_pygame import load_pygame
 import os
 import json
 import datetime
+from CodeFiles import notifications
+from CodeFiles import locked_tiles
 
 pygame.init()
 
@@ -26,17 +28,17 @@ gui_rect = pygame.Rect(0, 0, gui_width, new_screen_height)
 
 tilemap = load_pygame("terrain_map.tmx")
 
-# Load game variables from a JSON file
+# Loads building statistics and properties from a JSON file
 def load_game_variables():
-    with open("./GameVariables.json", "r") as f:
+    with open("./BuildingStats.json", "r") as f:
         return json.load(f)
 
-# Retrieve a specific stat for a building
+# Gets a specific statistic for a given building from the building stats dictionary
 def get_building_stat(building, stat):
-    return building_stats[0][building][stat]
+    return building_stats[building][stat]
 
 game_variables = load_game_variables()
-building_stats = game_variables["buildingStats"]
+building_stats = game_variables  # Now directly contains the building stats dictionary
 
 power_plant_images = [
     pygame.image.load("Assets/wind_turbine.png"),
@@ -68,22 +70,22 @@ lock_image = pygame.image.load("Assets/lock.png")
 lock_image = pygame.transform.scale(lock_image, (40, 40))
 
 # Dynamically load building prices
-building_prices = {building: get_building_stat(building, "price") for building in building_stats[0]}
+building_prices = {building: get_building_stat(building, "price") for building in building_stats}
 
 # Dynamically load power plant ticks
-power_plant_ticks = {building: get_building_stat(building, "ticks") for building in building_stats[0] if "ticks" in building_stats[0][building]}
+power_plant_ticks = {building: get_building_stat(building, "ticks") for building in building_stats if "ticks" in building_stats[building]}
 
 # Dynamically load power per second for power plants
-power_per_second = {building: get_building_stat(building, "power_per_second") for building in building_stats[0] if "power_per_second" in building_stats[0][building]}
+power_per_second = {building: get_building_stat(building, "power_per_second") for building in building_stats if "power_per_second" in building_stats[building]}
 
 # Dynamically load research per second for labs
-research_per_second = {building: get_building_stat(building, "research_per_second") for building in building_stats[0] if "research_per_second" in building_stats[0][building]}
+research_per_second = {building: get_building_stat(building, "research_per_second") for building in building_stats if "research_per_second" in building_stats[building]}
 
 # Dynamically load money per second for houses
-money_per_second = {building: get_building_stat(building, "money_per_second") for building in building_stats[0] if "money_per_second" in building_stats[0][building]}
+money_per_second = {building: get_building_stat(building, "money_per_second") for building in building_stats if "money_per_second" in building_stats[building]}
 
 # Dynamically load battery capacities
-battery_capacity = {building: get_building_stat(building, "capacity") for building in building_stats[0] if "capacity" in building_stats[0][building]}
+battery_capacity = {building: get_building_stat(building, "capacity") for building in building_stats if "capacity" in building_stats[building]}
 
 building_mapping = {
     power_plant_images[0]: "wind_turbine",
@@ -166,93 +168,6 @@ auto_repair_fusion_plants = False
 sell_percentage = 0.5
 repair_cost_percentage = 0.5
 offline_percentage = 0.25
-
-# Define locked tiles for each region (manually assign tiles here)
-locked_tiles = {
-    "Stewart Island": {
-        "tiles": {
-            (6, 26),
-            (5, 27), (6, 27),
-        },
-        "locked": True,
-        "price": 0
-    },
-    "Southland": {
-        "tiles": {
-            (8, 16), (9, 16),
-            (7, 17), (8, 17), (9, 17),
-            (6, 18), (7, 18), (8, 18), (9, 18), (10, 18),
-            (5, 19), (6, 19), (7, 19), (8, 19), (9, 19), (10, 19),
-            (4, 20), (5, 20), (6, 20), (7, 20), (8, 20), (9, 20), (10, 20),
-            (4, 21), (5, 21), (6, 21), (7, 21), (8, 21), (9, 21), (10, 21),
-            (5, 22), (6, 22), (7, 22), (8, 22), (9, 22), (10, 22), (11, 22),
-            (8, 23), (9, 23), (10, 23), (11, 23),
-            (11, 24)
-        },
-        "locked": True,
-        "price": 5
-    },
-    "Otago": {
-        "tiles": {
-            (14, 15), (15, 15), (16, 15),
-            (13, 16), (14, 16), (15, 16), (16, 16),
-            (12, 17), (13, 17), (14, 17), (15, 17), (16, 17),
-            (11, 18), (12, 18), (13, 18), (14, 18), (15, 18),
-            (11, 19), (12, 19), (13, 19), (14, 19), (15, 19),
-            (11, 20), (12, 20), (13, 20), (14, 20), (15, 20),
-            (11, 21), (12, 21), (13, 21), (14, 21), (15, 21),
-            (12, 22), (13, 22), (14, 22),
-            (12, 23), (13, 23),
-            (12, 24)
-        }, 
-        "locked": True, 
-        "price": 1000
-    },
-    "West Coast": {
-        "tiles": {
-            (18, 5),
-            (17, 6), (18, 6), (19, 6),
-            (17, 7), (18, 7), (19, 7),
-            (17, 8), (18, 8), 
-            (16, 9), (17, 9), (18, 9),
-            (15, 10), (16, 10), (17, 10),
-            (14, 11), (15, 11), (16, 11),
-            (13, 12), (14, 12), (15, 12),
-            (11, 13), (12, 13), (13, 13), (14, 13),
-            (10, 14), (11, 14), (12, 14), (13, 14), (14, 14),
-            (9, 15), (10, 15), (11, 15), (12, 15), (13, 15),
-            (10, 16), (11, 16), (12, 16),
-            (10, 17), (11, 17),
-        }, 
-        "locked": True, 
-        "price": 5000
-    },
-    "Canterbury": {
-        "tiles": {
-            (19, 8), (20, 8), (21, 8), (22, 8), (23, 8),
-            (19, 9), (20, 9), (21, 9), (22, 9),
-            (18, 10), (19, 10), (20, 10), (21, 10), (22, 10),
-            (17, 11), (18, 11), (19, 11), (20, 11),
-            (16, 12), (17, 12), (18, 12), (19, 12), (20, 12),
-            (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13), (21, 13),
-            (15, 14), (16, 14), (17, 14), (18, 14),
-        }, 
-        "locked": True, 
-        "price": 15000
-    },
-    "Marlborough and Nelson": {
-        "tiles": {
-            (20, 2),
-            (19, 3), (20, 3), (21, 3), (24, 3),
-            (19, 4), (20, 4), (21, 4), (22, 4), (23, 4), (24, 4),
-            (19, 5), (20, 5), (21, 5), (22, 5), (23, 5), (24, 5),
-            (20, 6), (21, 6), (22, 6), (23, 6), (24, 6),
-            (20, 7), (21, 7), (22, 7), (23, 7), (24, 7),
-        }, 
-        "locked": True, 
-        "price": 7500
-    },
-}
 
 # Add unlock flags for buildings
 building_unlocks = {
@@ -622,9 +537,9 @@ min_research_tree_zoom = 0.3
 max_research_tree_zoom = 0.7
 
 # Load the custom font
-custom_font = pygame.font.Font("Assets/font.ttf", 24)
+custom_font = pygame.font.Font("Assets/font.ttf", 18)
 
-# Save player data to a JSON file
+# Saves current game state including resources, buildings, and upgrades to a JSON file
 def save_player_data():
     print(now.strftime("%d-%m-%Y %H:%M:%S")),
     player_data = {
@@ -646,15 +561,15 @@ def save_player_data():
         },
         "unlocked_areas": {
             region_name: not region_data["locked"]
-            for region_name, region_data in locked_tiles.items()
+            for region_name, region_data in locked_tiles.locked_tiles.items()
         }
     }
     with open("playerData.json", "w") as f:
         json.dump(player_data, f, indent=4)
 
-# Load player data from a JSON file
+# Loads previously saved game state and applies all research upgrades and building placements
 def load_player_data():
-    global money, research, power, max_power, placed_blocks, placed_power_plant_ticks, locked_tiles, idle_seconds, money_ps, research_ps
+    global money, research, power, max_power, placed_blocks, placed_power_plant_ticks, idle_seconds, money_ps, research_ps
     try:
         with open("playerData.json", "r") as f:
             player_data = json.load(f)
@@ -710,11 +625,11 @@ def load_player_data():
             # Load unlocked areas last
             unlocked_areas = player_data.get("unlocked_areas", {})
             for region_name, unlocked in unlocked_areas.items():
-                if region_name in locked_tiles:
-                    locked_tiles[region_name]["locked"] = not unlocked
+                if region_name in locked_tiles.locked_tiles:
+                    locked_tiles.locked_tiles[region_name]["locked"] = not unlocked
 
             print(f"Successfully loaded save file with {len(placed_blocks)} buildings")
-            print(idle_reward())
+            idle_reward()
 
     except FileNotFoundError:
         print("No save file found. Starting a new game.")
@@ -724,6 +639,7 @@ def load_player_data():
         print(f"Error loading save file: {e}")
         print("Starting a new game.")
     
+# Calculates the time difference in seconds between two timestamps
 def calculate_time_difference(start_time, end_time):
     # Convert string timestamps to datetime objects
     start = datetime.datetime.strptime(start_time, "%d-%m-%Y %H:%M:%S")
@@ -738,9 +654,10 @@ def calculate_time_difference(start_time, end_time):
     if seconds_difference > 0:
         return seconds_difference
     else:
-        print("DONT TAMPER WITH THE TIME!")
+        print("Wow you are from the future?")
         return 0
     
+# Processes offline progress and rewards player for time away from the game
 def idle_reward():
     global money, research, money_ps, research_ps, idle_seconds, power, placed_power_plant_ticks
     
@@ -818,9 +735,10 @@ def idle_reward():
     money += offline_money
     research += offline_research
     
-    return f" You were away for {idle_seconds} seconds and earned ${round(offline_money, 2)} and {round(offline_research, 2)} research points while away!"
+    message = f"You were away for {idle_seconds} seconds and earned ${round(offline_money, 2)} and {round(offline_research, 2)} research points while away!"
+    notifications.create_popup("Welcome Back!", message)
 
-# Function to render the research tree GUI
+# Renders the research tree interface including nodes, connections and upgrade options
 def render_research_tree():
     global back_button_rect
     screen.fill((50, 50, 50))
@@ -939,7 +857,7 @@ def render_research_tree():
             else:
                 node["button_rect"] = None
 
-# Function to handle research tree interactions
+# Handles click interactions within the research tree interface
 def handle_research_tree_click(mouse_pos):
     global research, money, research_tree_open, research_tree_dragging, last_research_mouse_pos
     for upgrade in research_upgrades:
@@ -971,7 +889,7 @@ def handle_research_tree_click(mouse_pos):
         research_tree_dragging = True
         last_research_mouse_pos = mouse_pos
 
-# Function to handle research tree dragging
+# Updates research tree position when dragging with the mouse
 def handle_research_tree_drag(mouse_pos):
     global research_tree_offset_x, research_tree_offset_y, last_research_mouse_pos
     if research_tree_dragging and last_research_mouse_pos:
@@ -981,13 +899,13 @@ def handle_research_tree_drag(mouse_pos):
         research_tree_offset_y += dy
         last_research_mouse_pos = mouse_pos
 
-# Function to stop dragging the research tree
+# Stops the research tree dragging interaction
 def stop_research_tree_drag():
     global research_tree_dragging, last_research_mouse_pos
     research_tree_dragging = False
     last_research_mouse_pos = None
 
-# Function to handle research tree zooming
+# Handles zooming in/out of the research tree view
 def handle_research_tree_zoom(event):
     global research_tree_zoom, research_tree_offset_x, research_tree_offset_y
     if event.y > 0:
@@ -1005,65 +923,7 @@ def handle_research_tree_zoom(event):
     research_tree_offset_y -= int(offset_y * (new_zoom - research_tree_zoom))
     research_tree_zoom = new_zoom
 
-# Function to render locked tiles with a grey overlay and tooltips
-def render_locked_tiles_with_tooltips(surface, offset_x, offset_y, zoom, mouse_pos):
-    tooltip_data = None  # Store tooltip data to render it last
-
-    if destroy_mode or selected_building:  # Disable tooltips and purchasing in build or destroy mode
-        for region_name, region_data in locked_tiles.items():
-            if region_data["locked"]:
-                for grid_x, grid_y in region_data["tiles"]:
-                    tile_x = grid_x * int(tilemap.tilewidth * zoom) + offset_x
-                    tile_y = grid_y * int(tilemap.tileheight * zoom) + offset_y
-                    grey_overlay = pygame.Surface((int(tilemap.tilewidth * zoom), int(tilemap.tileheight * zoom)), pygame.SRCALPHA)
-                    grey_overlay.fill((50, 50, 50, 150)) 
-                    surface.blit(grey_overlay, (tile_x, tile_y))
-        return
-
-    tile_width = int(tilemap.tilewidth * zoom)
-    tile_height = int(tilemap.tileheight * zoom)
-
-    for region_name, region_data in locked_tiles.items():
-        if region_data["locked"]:  # Only render locked tiles for locked regions
-            # Determine if the mouse is hovering over any tile in the region
-            hovering = False
-            for grid_x, grid_y in region_data["tiles"]:
-                tile_x = grid_x * tile_width + offset_x
-                tile_y = grid_y * tile_height + offset_y
-                tile_rect = pygame.Rect(tile_x, tile_y, tile_width, tile_height)
-                if tile_rect.collidepoint(mouse_pos):
-                    hovering = True
-                    break
-
-            # Highlight locked tiles with a different color if hovering
-            for grid_x, grid_y in region_data["tiles"]:
-                tile_x = grid_x * tile_width + offset_x
-                tile_y = grid_y * tile_height + offset_y
-                grey_overlay = pygame.Surface((tile_width, tile_height), pygame.SRCALPHA)
-                if hovering:
-                    grey_overlay.fill((100, 100, 255, 150))  # Blue overlay for hovering
-                else:
-                    grey_overlay.fill((50, 50, 50, 150)) 
-                surface.blit(grey_overlay, (tile_x, tile_y))
-
-            # Store tooltip data if hovering
-            if hovering:
-                tooltip_data = {
-                    "region_name": region_name,
-                    "mouse_pos": mouse_pos,
-                    "price": region_data["price"]
-                }
-
-    # Render the tooltip last to ensure it appears on top
-    if tooltip_data:
-        render_tooltip(
-            tooltip_data["region_name"],
-            (tooltip_data["mouse_pos"][0] + 15, tooltip_data["mouse_pos"][1] + 15),  # Tooltip follows the mouse
-            show_cost=False,
-            additional_lines=[(f"Price: ${tooltip_data['price']}", (255, 255, 0))] 
-        )
-
-# Function to render the tilemap
+# Renders the tilemap with proper offsets and zoom level
 def render_tilemap(surface, tilemap, offset_x, offset_y, zoom):
     for layer in tilemap.layers:
         if hasattr(layer, "data"):
@@ -1077,10 +937,11 @@ def render_tilemap(surface, tilemap, offset_x, offset_y, zoom):
                             tile_height = int(tilemap.tileheight * zoom)
                             scaled_tile = pygame.transform.scale(tile, (tile_width, tile_height))
                             surface.blit(scaled_tile, (x * tile_width + offset_x, y * tile_height + offset_y))
-    # Ensure locked tiles and their tooltips are rendered last
-    render_locked_tiles_with_tooltips(surface, offset_x, offset_y, zoom, pygame.mouse.get_pos())
+    tooltip_data = locked_tiles.render_locked_tiles_with_tooltips(surface, offset_x, offset_y, zoom, pygame.mouse.get_pos(), tilemap, destroy_mode, selected_building)
+    if tooltip_data:
+        render_tooltip(tooltip_data[0], (tooltip_data[2][0] + 15, tooltip_data[2][1] + 15), show_cost=False, additional_lines=[(f"Price: ${tooltip_data[1]}", (255, 255, 0))])
 
-# Function to render the grid only on tiles with a specific gid in the tilemap
+# Renders grid overlay on valid building placement tiles
 def render_grid(surface, tilemap, offset_x, offset_y, zoom, valid_tiles):
     tile_width = int(tilemap.tilewidth * zoom)
     tile_height = int(tilemap.tileheight * zoom)
@@ -1101,7 +962,7 @@ def render_grid(surface, tilemap, offset_x, offset_y, zoom, valid_tiles):
 
                         valid_tiles.add((x, y))
 
-# Function to render placed blocks with hover effect in destroy mode and tooltips
+# Renders placed buildings with hover effects and tooltips
 def render_placed_blocks(surface, placed_blocks, offset_x, offset_y, zoom, mouse_pos):
     tile_width = int(tilemap.tilewidth * zoom)
     tile_height = int(tilemap.tileheight * zoom)
@@ -1136,7 +997,7 @@ def render_placed_blocks(surface, placed_blocks, offset_x, offset_y, zoom, mouse
     if tooltip_data:
         render_tooltip(*tooltip_data)
 
-# Function to make text display
+# Renders text elements with optional button functionality
 def render_text(text, size, color, position, button=False, button_size=(0, 0), button_color=(0, 0, 0)):
     font = pygame.font.Font("Assets/font.ttf", size + 5)  # Increase font size by 5px
     display_text = font.render(text, True, color)
@@ -1151,13 +1012,14 @@ def render_text(text, size, color, position, button=False, button_size=(0, 0), b
         screen.blit(display_text, position)
         return None
 
+# Checks if a building can be placed at the given grid position
 def can_place_building(grid_x, grid_y):
     if 0 <= grid_x < tilemap.width and 0 <= grid_y < tilemap.height:
         gid_layer2 = tilemap.layers[1].data[grid_y][grid_x]
         return gid_layer2 == 0
     return False
 
-# Update max power dynamically based on placed batteries
+# Updates maximum power capacity based on placed battery buildings
 def update_max_power():
     global max_power
     max_power = 50
@@ -1166,14 +1028,14 @@ def update_max_power():
         if building_name in battery_capacity:
             max_power += battery_capacity[building_name]
 
-# Function to update research points based on placed labs
+# Updates research points based on placed research labs
 def update_research():
     global research, research_ps
     added_research = sum(research_per_second[building_mapping[block_image]] for block_image in placed_blocks.values() if building_mapping[block_image] in research_per_second)
     research += added_research
     research_ps = round(added_research, 2)
 
-# Function to update power points based on placed power plants
+# Updates power production based on active power plants
 def update_power():
     global power, power_ps, money
     added_power = 0
@@ -1206,7 +1068,7 @@ def update_power():
     power_ps = round(added_power, 2)
     power = min(power, max_power)
 
-# Function to convert power into money based on placed houses
+# Converts power into money based on placed houses
 def update_money():
     global money, money_ps, power
     required_power = 0
@@ -1228,16 +1090,16 @@ def update_money():
     money = round(money, 2)
     money_ps = round(earned_money, 2)
 
-# Function to format building names for tooltips
+# Formats building names for display in tooltips
 def format_building_name(building_name):
     return building_name.replace("_", " ").title()
 
-# Function to render tooltips
+# Renders tooltips for buildings and regions
 def render_tooltip(building, position, ticks_left=None, show_cost=False, additional_lines=None):
     font = pygame.font.Font(None, 21)
     lines = []
 
-    if building in locked_tiles: 
+    if building in locked_tiles.locked_tiles: 
         lines.append((building, (255, 255, 255)))  
         lines.append(("Unlockable Region", (255, 255, 255)))  
     elif building in research_per_second:
@@ -1303,7 +1165,7 @@ def render_tooltip(building, position, ticks_left=None, show_cost=False, additio
     for i, line_surface in enumerate(rendered_lines):
         screen.blit(line_surface, (position[0] + 5, position[1] + 5 + i * line_height))
 
-# Adjust GUI rendering to include increased font sizes
+# Renders the game's graphical user interface
 def render_gui():
     pygame.draw.rect(screen, (50, 50, 50), gui_rect)
 
@@ -1399,7 +1261,7 @@ def render_gui():
     if tooltip_data:
         render_tooltip(tooltip_data[0], (tooltip_data[1][0] + 15, tooltip_data[1][1] + 15), show_cost=True)
 
-# Prevent clicks on locked buttons
+# Handles click interactions within the GUI
 def handle_gui_click(mouse_x, mouse_y):
     global selected_building, show_grid, destroy_mode
 
@@ -1415,7 +1277,7 @@ def handle_gui_click(mouse_x, mouse_y):
                     show_grid = True
                     destroy_mode = False
             else:
-                print(f"{building_name} is locked. Unlock it via the research tree.")
+                notifications.create_toast(f"{building_name} is locked. Unlock it via the research tree.")
             break
 
     for i, rect in enumerate(lab_buttons):
@@ -1430,7 +1292,7 @@ def handle_gui_click(mouse_x, mouse_y):
                     show_grid = True
                     destroy_mode = False
             else:
-                print(f"{building_name} is locked. Unlock it via the research tree.")
+                notifications.create_toast(f"{building_name} is locked. Unlock it via the research tree.")
             break
 
     for i, rect in enumerate(house_buttons):
@@ -1445,7 +1307,7 @@ def handle_gui_click(mouse_x, mouse_y):
                     show_grid = True
                     destroy_mode = False
             else:
-                print(f"{building_name} is locked. Unlock it via the research tree.")
+                notifications.create_toast(f"{building_name} is locked. Unlock it via the research tree.")
             break
     
     for i, rect in enumerate(battery_buttons):
@@ -1460,10 +1322,10 @@ def handle_gui_click(mouse_x, mouse_y):
                     show_grid = True
                     destroy_mode = False
             else:
-                print(f"{building_name} is locked. Unlock it via the research tree.")
+                notifications.create_toast(f"{building_name} is locked. Unlock it via the research tree.")
             break
 
-# Handle block restoration when clicking on a broken building
+# Handles repairing of broken buildings
 def handle_repair(grid_x, grid_y):
     if destroy_mode:
         # Do not allow repairs when destroy mode is active
@@ -1490,28 +1352,7 @@ def handle_repair(grid_x, grid_y):
                 repair_sound1.play()
                 repair_sound2.play()
             else:
-                print(money)
-
-# Function to unlock a region
-def unlock_region(region_name):
-    global money
-    if region_name in locked_tiles and locked_tiles[region_name]["locked"]:
-        price = locked_tiles[region_name]["price"]
-        if money >= price:
-            money -= price
-            locked_tiles[region_name]["locked"] = False
-            print(f"Unlocked {region_name} for ${price}.")
-            unlock_sound = pygame.mixer.Sound("Sound_Effects/unlock_region.mp3")
-            unlock_sound.play()
-        else:
-            print("Not enough money to unlock this region!")
-
-# Function to check if a tile is locked
-def is_tile_locked(grid_x, grid_y):
-    for region_name, region_data in locked_tiles.items():
-        if region_data["locked"] and (grid_x, grid_y) in region_data["tiles"]:
-            return True
-    return False
+                notifications.create_toast(f"Not enough money to repair {building_name}!")
 
 # Load player data at the start of the game
 load_player_data()
@@ -1564,25 +1405,24 @@ while running:
     # Render the GUI elements
     render_gui()
 
+    notifications.render_notifications(screen, custom_font)
+
     for event in pygame.event.get():
         # Handle quitting the game
         if event.type == pygame.QUIT:
             save_player_data()  # Save data when quitting
             running = False
 
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1 and notifications.handle_popup_click(event.pos):  # Only handle left clicks
+                continue
+            
+            if research_tree_open:
+                # Handle clicks only for the research tree when it is open
+                handle_research_tree_click(event.pos)
+                continue
 
-        elif research_tree_open and event.type == pygame.MOUSEBUTTONDOWN:
-            # Handle clicks only for the research tree when it is open
-            handle_research_tree_click(event.pos)
-
-        elif event.type == pygame.MOUSEBUTTONUP:
-            stop_research_tree_drag()
-
-        elif event.type == pygame.MOUSEMOTION:
-            handle_research_tree_drag(event.pos)
-
-        elif not research_tree_open and event.type == pygame.MOUSEBUTTONDOWN:
-            # Handle other interactions only when the research tree is closed
+            # Handle other game interactions
             mouse_x, mouse_y = event.pos
 
             if destroy_button_rect and destroy_button_rect.collidepoint((mouse_x, mouse_y)):
@@ -1611,20 +1451,12 @@ while running:
             # Handle region unlocking
             if not destroy_mode and not selected_building:  # Allow region purchasing only if not in build or destroy mode
                 if event.button == 1:  # Only allow unlocking with left click
-                    for region_name, region_data in locked_tiles.items():
-                        if region_data["locked"]:
-                            for grid_x, grid_y in region_data["tiles"]:
-                                tile_width = int(tilemap.tilewidth * zoom)
-                                tile_height = int(tilemap.tileheight * zoom)
-                                tile_rect = pygame.Rect(
-                                    grid_x * tile_width + gui_width + camera_x,
-                                    grid_y * tile_height + camera_y,
-                                    tile_width,
-                                    tile_height,
-                                )
-                                if tile_rect.collidepoint(mouse_x, mouse_y):
-                                    unlock_region(region_name)
-                                    break
+                    tile_x = int((mouse_x - gui_width - camera_x) // int(tilemap.tilewidth * zoom))
+                    tile_y = int((mouse_y - camera_y) // int(tilemap.tileheight * zoom))
+                    for region_name, region_data in locked_tiles.locked_tiles.items():
+                        if region_data["locked"] and (tile_x, tile_y) in region_data["tiles"]:
+                            money, _ = locked_tiles.unlock_region(region_name, money)
+                            break
 
             # Handle repairing buildings regardless of build mode
             if not destroy_mode:
@@ -1669,8 +1501,8 @@ while running:
                             placed_power_plant_ticks[(grid_x, grid_y)] = power_plant_ticks[building_name]
 
                 elif (grid_x, grid_y) in valid_tiles and (grid_x, grid_y) not in placed_blocks and can_place_building(grid_x, grid_y):
-                    if is_tile_locked(grid_x, grid_y):
-                        print("This tile is locked behind a region. Unlock the region to build here.")
+                    if locked_tiles.is_tile_locked(grid_x, grid_y):
+                        notifications.create_toast("This tile is locked behind a region. Unlock the region to build here.")
                     else:
                         if event.button == 1 and selected_building:
                             building_name = building_mapping[selected_building]
@@ -1687,6 +1519,8 @@ while running:
                                 update_max_power()
                                 build_sound = pygame.mixer.Sound("Sound_Effects/lego_building.mp3")
                                 build_sound.play()
+                            else:
+                                notifications.create_toast(f"Not enough money! Need ${building_cost}")
 
             if event.button == 3:
                 # Start dragging the map
