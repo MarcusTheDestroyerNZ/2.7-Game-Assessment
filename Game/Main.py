@@ -12,6 +12,7 @@ pygame.init()
 now = datetime.datetime.now()
 print(now.strftime("%d-%m-%Y %H:%M:%S"))
 
+
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 screen_width = 1200
 screen_height = 600
@@ -69,22 +70,17 @@ battery_images = [
 lock_image = pygame.image.load("Assets/lock.png")
 lock_image = pygame.transform.scale(lock_image, (40, 40))
 
-# Dynamically load building prices
+# Dynamically load building variables
 building_prices = {building: get_building_stat(building, "price") for building in building_stats}
 
-# Dynamically load power plant ticks
 power_plant_ticks = {building: get_building_stat(building, "ticks") for building in building_stats if "ticks" in building_stats[building]}
 
-# Dynamically load power per second for power plants
 power_per_second = {building: get_building_stat(building, "power_per_second") for building in building_stats if "power_per_second" in building_stats[building]}
 
-# Dynamically load research per second for labs
 research_per_second = {building: get_building_stat(building, "research_per_second") for building in building_stats if "research_per_second" in building_stats[building]}
 
-# Dynamically load money per second for houses
 money_per_second = {building: get_building_stat(building, "money_per_second") for building in building_stats if "money_per_second" in building_stats[building]}
 
-# Dynamically load battery capacities
 battery_capacity = {building: get_building_stat(building, "capacity") for building in building_stats if "capacity" in building_stats[building]}
 
 building_mapping = {
@@ -148,10 +144,10 @@ research_button_rect = None
 global sell_power_button_rect
 sell_power_button_rect = None
 
-# Track remaining ticks for each placed power plant
+# track remaining ticks for each placed power plant
 placed_power_plant_ticks = {}
 
-# Initialize the auto-repair flag
+# initialize the auto-repair flag
 global auto_repair_wind_turbines
 global auto_repair_solar_panels
 global auto_repair_coal_plants
@@ -240,63 +236,63 @@ research_upgrades = [
     },
     {
         "name": "Double Coal Plant Ticks",
-        "cost": 10000,  
+        "cost": 25000,  
         "currency": "research",  
         "effect": lambda: double_coal_plant_ticks(),
         "purchased": False
     },
     {
         "name": "Double Coal Plant Efficiency",
-        "cost": 10000,  
+        "cost": 35000,  
         "currency": "research",  
         "effect": lambda: double_coal_plant_efficiency(),
         "purchased": False
     },
     {
         "name": "Automatically Repair Coal Plants",
-        "cost": 10000,  
+        "cost": 50000,  
         "currency": "research",  
         "effect": lambda: automatically_repair_coal_plants(),
         "purchased": False
     },
     {
         "name": "Double Nuclear Plant Ticks",
-        "cost": 10000,  
+        "cost": 75000,  
         "currency": "research",  
         "effect": lambda: double_nuclear_plant_ticks(),
         "purchased": False
     },
     {
         "name": "Double Nuclear Plant Efficiency",
-        "cost": 10000,  
+        "cost": 100000,  
         "currency": "research",  
         "effect": lambda: double_nuclear_plant_efficiency(),
         "purchased": False
     },
     {
         "name": "Automatically Repair Nuclear Plants",
-        "cost": 10000,  
+        "cost": 150000,  
         "currency": "research",  
         "effect": lambda: automatically_repair_nuclear_plants(),
         "purchased": False
     },
     {
         "name": "Double Fusion Plant Ticks",
-        "cost": 10000,  
+        "cost": 250000,  
         "currency": "research",  
         "effect": lambda: double_fusion_plant_ticks(),
         "purchased": False
     },
     {
         "name": "Double Fusion Plant Efficiency",
-        "cost": 10000,  
+        "cost": 350000,  
         "currency": "research",  
         "effect": lambda: double_fusion_plant_efficiency(),
         "purchased": False
     },
     {
         "name": "Automatically Repair Fusion Plants",
-        "cost": 10000,  
+        "cost": 500000,  
         "currency": "research",  
         "effect": lambda: automatically_repair_fusion_plants(),
         "purchased": False
@@ -310,35 +306,35 @@ research_upgrades = [
     },
     {
         "name": "Unlock Research Lab 2",
-        "cost": 1000,
+        "cost": 5000,
         "currency": "research",
         "effect": lambda: unlock_building("lab2"),
         "purchased": False
     },
     {
         "name": "Unlock Research Lab 3",
-        "cost": 5000,
+        "cost": 50000,
         "currency": "research",
         "effect": lambda: unlock_building("lab3"),
         "purchased": False
     },
     {
         "name": "Unlock House 1",
-        "cost": 250,  
+        "cost": 500,  
         "currency": "research",  
         "effect": lambda: unlock_building("house1"),
         "purchased": False
     },
     {
         "name": "Unlock House 2",
-        "cost": 1000,
+        "cost": 5000,
         "currency": "research",
         "effect": lambda: unlock_building("house2"),
         "purchased": False
     },
     {
         "name": "Unlock House 3",
-        "cost": 5000,
+        "cost": 10000,
         "currency": "research",
         "effect": lambda: unlock_building("house3"),
         "purchased": False
@@ -352,28 +348,28 @@ research_upgrades = [
     },
     {
         "name": "Unlock Coal Plant",
-        "cost": 15000,  
+        "cost": 20000,  
         "currency": "research",  
         "effect": lambda: unlock_building("coal_plant"),
         "purchased": False
     },
     {
         "name": "Unlock Nuclear Plant",
-        "cost": 1000,  
+        "cost": 75000,  
         "currency": "research",  
         "effect": lambda: unlock_building("nuclear_plant"),
         "purchased": False
     },
     {
         "name": "Unlock Fusion Plant",
-        "cost": 1000,  
+        "cost": 200000,  
         "currency": "research",  
         "effect": lambda: unlock_building("fusion_plant"),
         "purchased": False
     },
     {
         "name": "Unlock Battery 1",
-        "cost": 350,
+        "cost": 250,
         "currency": "research",
         "effect": lambda: unlock_building("battery1"),
         "purchased": False
@@ -395,14 +391,14 @@ tree_layout = [
     ],
     # 2nd node row
     [
-        {"name": "Unlock Research Lab 1", "x": 500, "y": 300, "image": lab_images[0], "unlocks": ["Unlock Solar Panels", "Unlock Research Lab 2", "Unlock House 1"]},
+        {"name": "Unlock Research Lab 1", "x": 500, "y": 300, "image": lab_images[0], "unlocks": ["Unlock Solar Panels", "Unlock Research Lab 2", "Unlock Battery 1"]},
         {"name": "Double Wind Turbine Efficiency", "x": 500, "y": 500, "image": power_plant_images[0], "unlocks": ["Automatically Repair Wind Turbines"]},
     ],
     # 3rd node row
     [
         {"name": "Unlock Solar Panels", "x": 1000, "y": 100, "image": power_plant_images[1], "unlocks": ["Double Solar Panel Ticks", "Double Solar Panel Efficiency"]},
         {"name": "Unlock Research Lab 2", "x": 1000, "y": 300, "image": lab_images[1], "unlocks": ["Unlock Research Lab 3"]},
-        {"name": "Unlock House 1", "x": 1000, "y": 500, "image": house_images[0], "unlocks": ["Unlock House 2", "Unlock Battery 1"]},
+        {"name": "Unlock Battery 1", "x": 1000, "y": 500, "image": battery_images[0], "unlocks": ["Unlock Battery 2", "Unlock House 1"]},
         {"name": "Automatically Repair Wind Turbines", "x": 1000, "y": 700, "image": power_plant_images[0], "unlocks": []},
     ],
     # 4th node row
@@ -410,20 +406,20 @@ tree_layout = [
         {"name": "Double Solar Panel Ticks", "x": 1500, "y": -100, "image": power_plant_images[1], "unlocks": ["Automatically Repair Solar Panels"]},
         {"name": "Double Solar Panel Efficiency", "x": 1500, "y": 100, "image": power_plant_images[1], "unlocks": ["Unlock Coal Plant"]},
         {"name": "Unlock Research Lab 3", "x": 1500, "y": 300, "image": lab_images[2], "unlocks": []},
-        {"name": "Unlock House 2", "x": 1500, "y": 500, "image": house_images[1], "unlocks": ["Unlock House 3"]},
-        {"name": "Unlock Battery 1", "x": 1500, "y": 700, "image": battery_images[0], "unlocks": ["Unlock Battery 2"]},
+        {"name": "Unlock Battery 2", "x": 1500, "y": 500, "image": battery_images[1], "unlocks": [""]},
+        {"name": "Unlock House 1", "x": 1500, "y": 700, "image": house_images[0], "unlocks": ["Unlock House 2"]},
     ],
     # 5th node row
     [
         {"name": "Automatically Repair Solar Panels", "x": 2000, "y": -100, "image": power_plant_images[1], "unlocks": []},
         {"name": "Unlock Coal Plant", "x": 2000, "y": 100, "image": power_plant_images[2], "unlocks": ["Double Coal Plant Ticks", "Double Coal Plant Efficiency"]},
-        {"name": "Unlock House 3", "x": 2000, "y": 500, "image": house_images[2], "unlocks": []},
-        {"name": "Unlock Battery 2", "x": 2000, "y": 700, "image": battery_images[1], "unlocks": []},
+        {"name": "Unlock House 2", "x": 2000, "y": 700, "image": house_images[1], "unlocks": ["Unlock House 3"]},
     ],
     # 6th node row
     [
         {"name": "Double Coal Plant Ticks", "x": 2500, "y": -100, "image": power_plant_images[2], "unlocks": ["Automatically Repair Coal Plants"]},
         {"name": "Double Coal Plant Efficiency", "x": 2500, "y": 100, "image": power_plant_images[2], "unlocks": ["Unlock Nuclear Plant"]},
+        {"name": "Unlock House 3", "x": 2500, "y": 700, "image": house_images[2], "unlocks": []},
     ],
     # 7th node row
     [
@@ -734,8 +730,17 @@ def idle_reward():
     
     money += offline_money
     research += offline_research
-    
-    message = f"You were away for {idle_seconds} seconds and earned ${round(offline_money, 2)} and {round(offline_research, 2)} research points while away!"
+    # Format idle time into days, hours, minutes, or seconds
+    if idle_seconds >= 86400:
+        idle_time_str = f"{int(idle_seconds // 86400)} days"
+    elif idle_seconds >= 3600:
+        idle_time_str = f"{int(idle_seconds // 3600)} hours"
+    elif idle_seconds >= 60:
+        idle_time_str = f"{int(idle_seconds // 60)} minutes"
+    else:
+        idle_time_str = f"{int(idle_seconds)} seconds"
+
+    message = f"You were away for {idle_time_str} and earned ${format_number(offline_money)} and {format_number(offline_research)} research points while away!"
     notifications.create_popup("Welcome Back!", message)
 
 # Renders the research tree interface including nodes, connections and upgrade options
@@ -750,8 +755,8 @@ def render_research_tree():
     # Render title, back button, and resource displays
     render_text("Research Tree", 43, (255, 255, 255), (new_screen_width // 2 - 150, 50))  
     back_button_rect = render_text("< Back", 15, (255, 255, 255), (new_screen_width - (new_screen_width / 1.1), 45), True, (100, 40), (100, 100, 100))  
-    render_text(f"Research Points: {research}", 15, (255, 255, 255), (20, 140))  
-    render_text(f"Money: ${money}", 15, (255, 255, 255), (20, 160))  
+    render_text(f"Research Points: {format_number(research)} RP", 15, (255, 255, 255), (20, 140))  
+    render_text(f"Money: ${format_number(money)}", 15, (255, 255, 255), (20, 160))  
 
     # Draw connections between nodes
     for i in range(len(tree_layout)):
@@ -846,7 +851,7 @@ def render_research_tree():
                 )
 
                 render_text(
-                    f"Cost: {'$' if upgrade['currency'] == "money" else ''} {upgrade['cost']} {'RP' if upgrade['currency'] == "research" else ''}",
+                    f"Cost: {'$' if upgrade['currency'] == 'money' else ''} {format_number(upgrade['cost'])} {'RP' if upgrade['currency'] == 'research' else ''}",
                     int(10 * research_tree_zoom),  # Dynamically scale font size
                     (255, 255, 255),
                     (
@@ -1103,46 +1108,35 @@ def render_tooltip(building, position, ticks_left=None, show_cost=False, additio
         lines.append((building, (255, 255, 255)))  
         lines.append(("Unlockable Region", (255, 255, 255)))  
     elif building in research_per_second:
-        formatted_name = format_building_name(building)
-        lines.append((formatted_name, (255, 255, 255)))  
-        lines.append((f"Produces Research", (255, 255, 255)))  
         if show_cost:
-            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  
-            lines.append((f"Cost: ${building_prices[building]}", cost_color))
-        lines.append((f"Produces: {research_per_second[building]} RP/s", (255, 255, 0)))  
+            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)
+            lines.append((f"Cost: ${format_number(building_prices[building])}", cost_color))
+        lines.append((f"Produces: {format_number(research_per_second[building])} RP/s", (255, 255, 0)))
+    
     elif building in money_per_second:
-        formatted_name = format_building_name(building)
-        lines.append((formatted_name, (255, 255, 255)))  
-        lines.append((f"Produces Money", (255, 255, 255)))  
         if show_cost:
-            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  
-            lines.append((f"Cost: ${building_prices[building]}", cost_color))
-        lines.append((f"Converts: {money_per_second[building]} MW/s", (255, 255, 0)))  
+            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)
+            lines.append((f"Cost: ${format_number(building_prices[building])}", cost_color))
+        lines.append((f"Converts: {format_number(money_per_second[building])} MW/s", (255, 255, 0)))
+    
     elif building in battery_capacity:
-        formatted_name = format_building_name(building)
-        lines.append((formatted_name, (255, 255, 255)))  
-        lines.append((f"Stores Power", (255, 255, 255)))  
         if show_cost:
-            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)  
-            lines.append((f"Cost: ${building_prices[building]}", cost_color))
-        lines.append((f"Stores: {battery_capacity[building]} Power", (255, 255, 0)))  
+            cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)
+            lines.append((f"Cost: ${format_number(building_prices[building])}", cost_color))
+        lines.append((f"Stores: {format_number(battery_capacity[building])} Power", (255, 255, 0)))
+    
     elif building in power_per_second:
-        formatted_name = format_building_name(building)
-        lines.append((formatted_name, (255, 255, 255)))  
-        lines.append((f"Produces Power", (255, 255, 255)))  
         if ticks_left is not None:
             if ticks_left <= 0:
                 lines.append((f"Status: Broken", (255, 0, 0)))
-                repair_cost = round(building_prices[building] * repair_cost_percentage, 2)  # Correctly calculate repair cost
-                lines.append((f"Repair Cost: ${repair_cost}", (255, 255, 0)))
+                repair_cost = round(building_prices[building] * repair_cost_percentage, 2)
+                lines.append((f"Repair Cost: ${format_number(repair_cost)}", (255, 255, 0)))
             else:
                 lines.append((f"Status: Operational", (0, 255, 0)))
         if show_cost:
             cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)
-            lines.append((f"Cost: ${building_prices[building]}", cost_color))
-        lines.append((f"Produces: {power_per_second[building]} MW/s", (255, 255, 0)))  # Yellow
-        if ticks_left is not None:
-            lines.append((f"Ticks Left: {ticks_left} / {power_plant_ticks[building]}",(255, 0, 255)))
+            lines.append((f"Cost: ${format_number(building_prices[building])}", cost_color))
+        lines.append((f"Produces: {format_number(power_per_second[building])} MW/s", (255, 255, 0)))
 
     # Add additional lines if provided
     if additional_lines:
@@ -1171,26 +1165,26 @@ def render_gui():
 
     global destroy_button_rect, research_button_rect, sell_power_button_rect
     
-    # Render resource stats
+    # Render resource stats with formatted numbers
     if money_ps == 0:
-        render_text(f"Money: ${round(money, 2)}", 12, (255, 255, 255), (20, 20 - gui_scroll_offset))  
+        render_text(f"Money: ${format_number(money)}", 12, (255, 255, 255), (20, 20 - gui_scroll_offset))  
     else:
-        render_text(f"Money: ${round(money, 2)} + {round(money_ps, 2)}/s", 12, (255, 255, 255), (20, 20 - gui_scroll_offset))  
+        render_text(f"Money: ${format_number(money)} + {format_number(money_ps)}/s", 12, (255, 255, 255), (20, 20 - gui_scroll_offset))  
 
     if power_ps == 0:
-        render_text(f"Power: {round(power, 2)} MW / {max_power} MW", 12, (255, 255, 255), (20, 50 - gui_scroll_offset))  
+        render_text(f"Power: {format_number(power)} MW / {format_number(max_power)} MW", 12, (255, 255, 255), (20, 50 - gui_scroll_offset))  
     else:
-        render_text(f"Power: {round(power, 2)} MW / {max_power} MW + {round(power_ps, 2)}/s", 12, (255, 255, 255), (20, 50 - gui_scroll_offset))  
+        render_text(f"Power: {format_number(power)} MW / {format_number(max_power)} MW + {format_number(power_ps)}/s", 12, (255, 255, 255), (20, 50 - gui_scroll_offset))  
 
     if research_ps == 0:
-        render_text(f"Research: {round(research, 2)} RP", 12, (255, 255, 255), (20, 80 - gui_scroll_offset))  
+        render_text(f"Research: {format_number(research)} RP", 12, (255, 255, 255), (20, 80 - gui_scroll_offset))  
     else:
-        render_text(f"Research: {round(research, 2)} RP + {round(research_ps, 2)}/s", 12, (255, 255, 255), (20, 80 - gui_scroll_offset))
+        render_text(f"Research: {format_number(research)} RP + {format_number(research_ps)}/s", 12, (255, 255, 255), (20, 80 - gui_scroll_offset))
 
     if pollution_ps == 0:
-        render_text(f"Pollution: {round(pollution, 2)} / {max_pollution}", 12, (255, 255, 255), (20, 110 - gui_scroll_offset))  
+        render_text(f"Pollution: {format_number(pollution)} / {format_number(max_pollution)}", 12, (255, 255, 255), (20, 110 - gui_scroll_offset))  
     else:
-        render_text(f"Pollution: {round(pollution, 2)} / {max_pollution} + {round(pollution_ps, 2)}/s", 12, (255, 255, 255), (20, 110 - gui_scroll_offset))    
+        render_text(f"Pollution: {format_number(pollution)} / {format_number(max_pollution)} + {format_number(pollution_ps)}/s", 12, (255, 255, 255), (20, 110 - gui_scroll_offset))    
 
     # Render buttons
     research_button_rect = render_text("Research", 10, (255, 255, 255), (20, 180 - gui_scroll_offset), True, (120, 35), (100, 100, 100))
@@ -1352,7 +1346,18 @@ def handle_repair(grid_x, grid_y):
                 repair_sound1.play()
                 repair_sound2.play()
             else:
-                notifications.create_toast(f"Not enough money to repair {building_name}!")
+                notifications.create_toast(f"Not enough money to repair {building_name}! Need ${format_number(repair_cost)}")
+
+# Add this function near the top of the file, after the imports
+def format_number(number):
+    if abs(number) >= 1e9:
+        return f"{number/1e9:.2f}B"
+    elif abs(number) >= 1e6:
+        return f"{number/1e6:.2f}M"
+    elif abs(number) >= 1e3:
+        return f"{number/1e3:.2f}K"
+    else:
+        return f"{number:.2f}"
 
 # Load player data at the start of the game
 load_player_data()
@@ -1520,7 +1525,7 @@ while running:
                                 build_sound = pygame.mixer.Sound("Sound_Effects/lego_building.mp3")
                                 build_sound.play()
                             else:
-                                notifications.create_toast(f"Not enough money! Need ${building_cost}")
+                                notifications.create_toast(f"Not enough money! Need ${format_number(building_cost)}")
 
             if event.button == 3:
                 # Start dragging the map
@@ -1584,6 +1589,8 @@ while running:
             elif event.type == pygame.MOUSEWHEEL:
                 handle_research_tree_zoom(event)
 
+       
+
         pygame.display.flip()
         continue
 
@@ -1598,6 +1605,8 @@ while running:
     # Save data periodically (e.g., every 10 seconds)
     if current_time - last_tick >= 10000:  # 10 seconds
         save_player_data()
+
+    now = datetime.datetime.now()
 
     pygame.display.flip()
 
