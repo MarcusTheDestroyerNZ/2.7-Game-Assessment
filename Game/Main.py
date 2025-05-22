@@ -147,18 +147,13 @@ sell_power_button_rect = None
 # track remaining ticks for each placed power plant
 placed_power_plant_ticks = {}
 
-# initialize the auto-repair flag
-global auto_repair_wind_turbines
-global auto_repair_solar_panels
-global auto_repair_coal_plants
-global auto_repair_nuclear_plants
-global auto_repair_fusion_plants
-
-auto_repair_wind_turbines = False
-auto_repair_solar_panels = False
-auto_repair_coal_plants = False
-auto_repair_nuclear_plants = False
-auto_repair_fusion_plants = False
+auto_repair_buildings = {
+    "wind_turbine": False,
+    "solar_panel": False,
+    "coal_plant": False,
+    "nuclear_plant": False,
+    "fusion_plant": False
+}
 
 # Percentage of the building cost returned when selling
 sell_percentage = 0.5
@@ -196,189 +191,224 @@ research_upgrades = [
         "name": "Double Wind Turbine Ticks",
         "cost": 15,  
         "currency": "money",  
-        "effect": lambda: double_wind_turbine_ticks(),
+        "effect": lambda: handle_upgrade("wind_turbine", "Ticks"),
         "purchased": False
     },
     {
         "name": "Double Wind Turbine Efficiency",
         "cost": 50,  
         "currency": "research",  
-        "effect": lambda: double_wind_turbine_efficiency(),
+        "effect": lambda: handle_upgrade("wind_turbine", "Efficiency"),
         "purchased": False
     },
     {
         "name": "Automatically Repair Wind Turbines",
         "cost": 100,  
         "currency": "research",  
-        "effect": lambda: automatically_repair_wind_turbines(),
+        "effect": lambda: handle_upgrade("wind_turbine", "Auto Repair"),
         "purchased": False
     },
     {
         "name": "Double Solar Panel Ticks",
         "cost": 3500,  
         "currency": "research",  
-        "effect": lambda: double_solar_panel_ticks(),
+        "effect": lambda: handle_upgrade("solar_panel", "Ticks"),
         "purchased": False
     },
     {
         "name": "Double Solar Panel Efficiency",
         "cost": 6000,
         "currency": "research",
-        "effect": lambda: double_solar_panel_efficiency(),
+        "effect": lambda: handle_upgrade("solar_panel", "Efficiency"),
         "purchased": False
     },
     {
         "name": "Automatically Repair Solar Panels",
         "cost": 10000,  
         "currency": "research",  
-        "effect": lambda: automatically_repair_solar_panels(),
+        "effect": lambda: handle_upgrade("solar_panel", "Auto Repair"),
         "purchased": False
     },
     {
         "name": "Double Coal Plant Ticks",
         "cost": 25000,  
         "currency": "research",  
-        "effect": lambda: double_coal_plant_ticks(),
+        "effect": lambda: handle_upgrade("coal_plant", "Ticks"),
         "purchased": False
     },
     {
         "name": "Double Coal Plant Efficiency",
         "cost": 35000,  
         "currency": "research",  
-        "effect": lambda: double_coal_plant_efficiency(),
+        "effect": lambda: handle_upgrade("coal_plant", "Efficiency"),
         "purchased": False
     },
     {
         "name": "Automatically Repair Coal Plants",
         "cost": 50000,  
         "currency": "research",  
-        "effect": lambda: automatically_repair_coal_plants(),
+        "effect": lambda: handle_upgrade("coal_plant", "Auto Repair"),
         "purchased": False
     },
     {
         "name": "Double Nuclear Plant Ticks",
         "cost": 75000,  
         "currency": "research",  
-        "effect": lambda: double_nuclear_plant_ticks(),
+        "effect": lambda: handle_upgrade("nuclear_plant", "Ticks"),
         "purchased": False
     },
     {
         "name": "Double Nuclear Plant Efficiency",
         "cost": 100000,  
         "currency": "research",  
-        "effect": lambda: double_nuclear_plant_efficiency(),
+        "effect": lambda: handle_upgrade("nuclear_plant", "Efficiency"),
         "purchased": False
     },
     {
         "name": "Automatically Repair Nuclear Plants",
         "cost": 150000,  
         "currency": "research",  
-        "effect": lambda: automatically_repair_nuclear_plants(),
+        "effect": lambda: handle_upgrade("nuclear_plant", "Auto Repair"),
         "purchased": False
     },
     {
         "name": "Double Fusion Plant Ticks",
         "cost": 250000,  
         "currency": "research",  
-        "effect": lambda: double_fusion_plant_ticks(),
+        "effect": lambda: handle_upgrade("fusion_plant", "Ticks"),
         "purchased": False
     },
     {
         "name": "Double Fusion Plant Efficiency",
         "cost": 350000,  
         "currency": "research",  
-        "effect": lambda: double_fusion_plant_efficiency(),
+        "effect": lambda: handle_upgrade("fusion_plant", "Efficiency"),
         "purchased": False
     },
     {
         "name": "Automatically Repair Fusion Plants",
         "cost": 500000,  
         "currency": "research",  
-        "effect": lambda: automatically_repair_fusion_plants(),
+        "effect": lambda: handle_upgrade("fusion_plant", "Auto Repair"),
+        "purchased": False
+    },
+    {
+        "name": "Double Battery 1 efficiency",
+        "cost": 100,
+        "currency": "research",
+        "effect": lambda: handle_upgrade("battery1", "Efficiency"),
+        "purchased": False
+    },
+    {
+        "name": "Double Battery 2 efficiency",
+        "cost": 500,
+        "currency": "research",
+        "effect": lambda: handle_upgrade("battery2", "Efficiency"),
+        "purchased": False
+    },
+    {
+        "name": "Double House 1 efficiency",
+        "cost": 100,
+        "currency": "research",
+        "effect": lambda: handle_upgrade("house1", "Efficiency"),
+        "purchased": False
+    },
+    {
+        "name": "Double House 2 efficiency",
+        "cost": 500,
+        "currency": "research",
+        "effect": lambda: handle_upgrade("house2", "Efficiency"),
+        "purchased": False
+    },
+    {
+        "name": "Double House 3 efficiency",
+        "cost": 1000,
+        "currency": "research",
+        "effect": lambda: handle_upgrade("house3", "Efficiency"),
         "purchased": False
     },
     {
         "name": "Unlock Research Lab 1",
         "cost": 150,  
         "currency": "money",  
-        "effect": lambda: unlock_building("lab1"),
+        "effect": lambda: handle_upgrade("lab1", "Unlock"),
         "purchased": False
     },
     {
         "name": "Unlock Research Lab 2",
         "cost": 5000,
         "currency": "research",
-        "effect": lambda: unlock_building("lab2"),
+        "effect": lambda: handle_upgrade("lab2", "Unlock"),
         "purchased": False
     },
     {
         "name": "Unlock Research Lab 3",
         "cost": 50000,
         "currency": "research",
-        "effect": lambda: unlock_building("lab3"),
+        "effect": lambda: handle_upgrade("lab3", "Unlock"),
         "purchased": False
     },
     {
         "name": "Unlock House 1",
         "cost": 500,  
         "currency": "research",  
-        "effect": lambda: unlock_building("house1"),
+        "effect": lambda: handle_upgrade("house1", "Unlock"),
         "purchased": False
     },
     {
         "name": "Unlock House 2",
         "cost": 5000,
         "currency": "research",
-        "effect": lambda: unlock_building("house2"),
+        "effect": lambda: handle_upgrade("house2", "Unlock"),
         "purchased": False
     },
     {
         "name": "Unlock House 3",
         "cost": 10000,
         "currency": "research",
-        "effect": lambda: unlock_building("house3"),
+        "effect": lambda: handle_upgrade("house3", "Unlock"),
         "purchased": False
     },
     {
         "name": "Unlock Solar Panels",
         "cost": 1000,  
         "currency": "research",  
-        "effect": lambda: unlock_building("solar_panel"),
+        "effect": lambda: handle_upgrade("solar_panel", "Unlock"),
         "purchased": False
     },
     {
         "name": "Unlock Coal Plant",
         "cost": 20000,  
         "currency": "research",  
-        "effect": lambda: unlock_building("coal_plant"),
+        "effect": lambda: handle_upgrade("coal_plant", "Unlock"),
         "purchased": False
     },
     {
         "name": "Unlock Nuclear Plant",
         "cost": 75000,  
         "currency": "research",  
-        "effect": lambda: unlock_building("nuclear_plant"),
+        "effect": lambda: handle_upgrade("nuclear_plant", "Unlock"),
         "purchased": False
     },
     {
         "name": "Unlock Fusion Plant",
         "cost": 200000,  
         "currency": "research",  
-        "effect": lambda: unlock_building("fusion_plant"),
+        "effect": lambda: handle_upgrade("fusion_plant", "Unlock"),
         "purchased": False
     },
     {
         "name": "Unlock Battery 1",
         "cost": 250,
         "currency": "research",
-        "effect": lambda: unlock_building("battery1"),
+        "effect": lambda: handle_upgrade("battery1", "Unlock"),
         "purchased": False
     },
     {
         "name": "Unlock Battery 2",
         "cost": 1250,
         "currency": "research",
-        "effect": lambda: unlock_building("battery2"),
+        "effect": lambda: handle_upgrade("battery2", "Unlock"),
         "purchased": False
     }
 ]
@@ -413,6 +443,7 @@ tree_layout = [
     [
         {"name": "Automatically Repair Solar Panels", "x": 2000, "y": -100, "image": power_plant_images[1], "unlocks": []},
         {"name": "Unlock Coal Plant", "x": 2000, "y": 100, "image": power_plant_images[2], "unlocks": ["Double Coal Plant Ticks", "Double Coal Plant Efficiency"]},
+        {"name": "Double Battery 1 efficiency", "x": 2000, "y": 500, "image": battery_images[0], "unlocks": []},
         {"name": "Unlock House 2", "x": 2000, "y": 700, "image": house_images[1], "unlocks": ["Unlock House 3"]},
     ],
     # 6th node row
@@ -447,80 +478,21 @@ tree_layout = [
     ]
 ]
 
-# Function to double wind turbine ticks
-def double_wind_turbine_ticks():
-    global power_plant_ticks
-    power_plant_ticks["wind_turbine"] *= 2
-
-# Function to increase wind turbine efficiency
-def double_wind_turbine_efficiency():
-    global power_per_second
-    power_per_second["wind_turbine"] *= 2
-
-# Function to automatically repair wind turbines
-def automatically_repair_wind_turbines():
-    global auto_repair_wind_turbines
-    auto_repair_wind_turbines = True
-
-# Function to double solar panel ticks
-def double_solar_panel_ticks():
-    global power_plant_ticks
-    power_plant_ticks["solar_panel"] *= 2
-
-# Function to double solar panel efficiency
-def double_solar_panel_efficiency():
-    global power_per_second
-    power_per_second["solar_panel"] *= 2
-
-# Function to automatically repair solar panels
-def automatically_repair_solar_panels():
-    global auto_repair_solar_panels
-    auto_repair_solar_panels = True
-
-# Function to double coal plant ticks
-def double_coal_plant_ticks():
-    global power_plant_ticks
-    power_plant_ticks["coal_plant"] *= 2
-
-# Function to double coal plant efficiency
-def double_coal_plant_efficiency():
-    global power_per_second
-    power_per_second["coal_plant"] *= 2
-
-# Function to automatically repair coal plants
-def automatically_repair_coal_plants():
-    global auto_repair_coal_plants
-    auto_repair_coal_plants = True
-
-# Function to double nuclear plant ticks
-def double_nuclear_plant_ticks():
-    global power_plant_ticks
-    power_plant_ticks["nuclear_plant"] *= 2
-
-# Function to double nuclear plant efficiency
-def double_nuclear_plant_efficiency():
-    global power_per_second
-    power_per_second["nuclear_plant"] *= 2
-
-# Function to automatically repair nuclear plants
-def automatically_repair_nuclear_plants():
-    global auto_repair_nuclear_plants
-    auto_repair_nuclear_plants = True
-
-# Function to double fusion plant ticks
-def double_fusion_plant_ticks():
-    global power_plant_ticks
-    power_plant_ticks["fusion_plant"] *= 2
-
-# Function to double fusion plant efficiency
-def double_fusion_plant_efficiency():
-    global power_per_second
-    power_per_second["fusion_plant"] *= 2
-
-# Function to automatically repair fusion plants
-def automatically_repair_fusion_plants():
-    global auto_repair_fusion_plants
-    auto_repair_fusion_plants = True
+def handle_upgrade(name, upgrade):
+    if upgrade == "Unlock":
+        unlock_building(name)
+        print(f"Unlocked: {name}")
+    elif upgrade == "Efficiency":
+        power_per_second[name] *= 2
+        print(f"Efficiency: {name}")
+    elif upgrade == "Ticks":
+        power_plant_ticks[name] *= 2
+        print(f"Ticks: {name}")
+    elif upgrade == "Auto Repair":
+        auto_repair_buildings[name] = True
+        print(f"Auto Repair: {name}")
+    else:
+        print(f"Unknown: Name: {name}, Upgrade: {upgrade}")
 
 # Variables for research tree movement and zoom
 research_tree_offset_x = 100
@@ -681,11 +653,11 @@ def idle_reward():
                 # Handle auto-repairs
                 if remaining_ticks == 0:
                     auto_repair_enabled = (
-                        (building_name == "wind_turbine" and auto_repair_wind_turbines) or
-                        (building_name == "solar_panel" and auto_repair_solar_panels) or
-                        (building_name == "coal_plant" and auto_repair_coal_plants) or
-                        (building_name == "nuclear_plant" and auto_repair_nuclear_plants) or
-                        (building_name == "fusion_plant" and auto_repair_fusion_plants)
+                        (building_name == "wind_turbine" and auto_repair_buildings("wind_turbine")) or
+                        (building_name == "solar_panel" and auto_repair_buildings("solar_panel")) or
+                        (building_name == "coal_plant" and auto_repair_buildings("coal_plant")) or
+                        (building_name == "nuclear_plant" and auto_repair_buildings("nuclear_plant")) or
+                        (building_name == "fusion_plant" and auto_repair_buildings("fusion_plant"))
                     )
 
                     if auto_repair_enabled:
@@ -815,13 +787,16 @@ def render_research_tree():
                     button_color = (0, 200, 0)  # Bright green for unlockable
                 else:
                     button_color = (115, 100, 100)  # Red tint for locked
+
                 button_rect = pygame.Rect(
                     node["x"] * research_tree_zoom + research_tree_offset_x,
                     node["y"] * research_tree_zoom + research_tree_offset_y,
                     300 * research_tree_zoom,  # Width of the button
                     100 * research_tree_zoom,  # Height of the button
                 )
-                pygame.draw.rect(screen, button_color, button_rect)
+                corner_radius = int(min(300 * research_tree_zoom, 100 * research_tree_zoom) // 6.4)
+                pygame.draw.rect(screen, button_color, button_rect, 0, corner_radius)
+                pygame.draw.rect(screen, (255, 255, 255), button_rect, 1, corner_radius)
 
                 # Assign the button_rect to the upgrade dictionary
                 upgrade["button_rect"] = button_rect
@@ -834,8 +809,8 @@ def render_research_tree():
                     screen.blit(
                         scaled_image,
                         (
-                            node["x"] * research_tree_zoom + 8 + research_tree_offset_x,
-                            node["y"] * research_tree_zoom + 8 + research_tree_offset_y,
+                            node["x"] * research_tree_zoom + 4 + research_tree_offset_x,
+                            node["y"] * research_tree_zoom + 4 + research_tree_offset_y,
                         ),
                     )
 
@@ -1055,11 +1030,11 @@ def update_power():
 
                 # Decrease the tick counter
                 placed_power_plant_ticks[(grid_x, grid_y)] -= 1
-            elif ((building_name == "wind_turbine" and auto_repair_wind_turbines) or
-            (building_name == "solar_panel" and auto_repair_solar_panels) or
-            (building_name == "coal_plant" and auto_repair_coal_plants) or
-            (building_name == "nuclear_plant" and auto_repair_nuclear_plants) or
-            (building_name == "fusion_plant" and auto_repair_fusion_plants)):
+            elif ((building_name == "wind_turbine" and auto_repair_buildings["wind_turbine"]) or
+            (building_name == "solar_panel" and auto_repair_buildings["solar_panel"]) or
+            (building_name == "coal_plant" and auto_repair_buildings["coal_plant"]) or
+            (building_name == "nuclear_plant" and auto_repair_buildings["nuclear_plant"]) or
+            (building_name == "fusion_plant" and auto_repair_buildings["fusion_plant"])):
                 # Automatically repair if the upgrade is active
                 repair_cost = max(1, int(building_prices[building_name] * repair_cost_percentage))
                 money = round(money, 2)
@@ -1108,24 +1083,36 @@ def render_tooltip(building, position, ticks_left=None, show_cost=False, additio
         lines.append((building, (255, 255, 255)))  
         lines.append(("Unlockable Region", (255, 255, 255)))  
     elif building in research_per_second:
+        formatted_name = format_building_name(building)
+        lines.append((formatted_name, (255, 255, 255)))  
+        lines.append((f"Produces Research", (255, 255, 255))) 
         if show_cost:
             cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)
             lines.append((f"Cost: ${format_number(building_prices[building])}", cost_color))
         lines.append((f"Produces: {format_number(research_per_second[building])} RP/s", (255, 255, 0)))
     
     elif building in money_per_second:
+        formatted_name = format_building_name(building)
+        lines.append((formatted_name, (255, 255, 255)))  
+        lines.append((f"Produces Money", (255, 255, 255)))  
         if show_cost:
             cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)
             lines.append((f"Cost: ${format_number(building_prices[building])}", cost_color))
         lines.append((f"Converts: {format_number(money_per_second[building])} MW/s", (255, 255, 0)))
     
     elif building in battery_capacity:
+        formatted_name = format_building_name(building)
+        lines.append((formatted_name, (255, 255, 255)))  
+        lines.append((f"Stores Power", (255, 255, 255)))  
         if show_cost:
             cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)
             lines.append((f"Cost: ${format_number(building_prices[building])}", cost_color))
         lines.append((f"Stores: {format_number(battery_capacity[building])} Power", (255, 255, 0)))
     
     elif building in power_per_second:
+        formatted_name = format_building_name(building)
+        lines.append((formatted_name, (255, 255, 255)))  
+        lines.append((f"Produces Power", (255, 255, 255)))
         if ticks_left is not None:
             if ticks_left <= 0:
                 lines.append((f"Status: Broken", (255, 0, 0)))
@@ -1137,6 +1124,8 @@ def render_tooltip(building, position, ticks_left=None, show_cost=False, additio
             cost_color = (0, 255, 0) if money >= building_prices[building] else (255, 0, 0)
             lines.append((f"Cost: ${format_number(building_prices[building])}", cost_color))
         lines.append((f"Produces: {format_number(power_per_second[building])} MW/s", (255, 255, 0)))
+        if ticks_left is not None:
+            lines.append((f"Ticks Left: {ticks_left} / {power_plant_ticks[building]}",(255, 0, 255)))
 
     # Add additional lines if provided
     if additional_lines:
