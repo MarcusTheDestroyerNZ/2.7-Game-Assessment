@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="64" tileheight="64" infinite="0" nextlayerid="4" nextobjectid="1">
  <tileset firstgid="1" source="forestTileset.tsx"/>
- <tileset firstgid="199" source="../Map Testing/Map1/forestTileset.tsx"/>
+ <tileset firstgid="199" source="forestTileset.tsx"/>
  <tileset firstgid="397" source="terrain_tileset.tsx"/>
  <tileset firstgid="403" name="Terrain" tilewidth="64" tileheight="64" tilecount="2" columns="0">
   <grid orientation="orthogonal" width="1" height="1"/>

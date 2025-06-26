@@ -12,7 +12,6 @@ pygame.init()
 now = datetime.datetime.now()
 print(now.strftime("%d-%m-%Y %H:%M:%S"))
 
-
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 screen_width = 1200
 screen_height = 600
@@ -198,7 +197,7 @@ research_upgrades = [
         "name": "Double Wind Turbine Efficiency",
         "cost": 50,  
         "currency": "research",  
-        "effect": lambda: handle_upgrade("wind_turbine", "Efficiency"),
+        "effect": lambda: handle_upgrade("wind_turbine", "Power Efficiency"),
         "purchased": False
     },
     {
@@ -219,7 +218,7 @@ research_upgrades = [
         "name": "Double Solar Panel Efficiency",
         "cost": 6000,
         "currency": "research",
-        "effect": lambda: handle_upgrade("solar_panel", "Efficiency"),
+        "effect": lambda: handle_upgrade("solar_panel", "Power Efficiency"),
         "purchased": False
     },
     {
@@ -240,7 +239,7 @@ research_upgrades = [
         "name": "Double Coal Plant Efficiency",
         "cost": 35000,  
         "currency": "research",  
-        "effect": lambda: handle_upgrade("coal_plant", "Efficiency"),
+        "effect": lambda: handle_upgrade("coal_plant", "Power Efficiency"),
         "purchased": False
     },
     {
@@ -261,7 +260,7 @@ research_upgrades = [
         "name": "Double Nuclear Plant Efficiency",
         "cost": 100000,  
         "currency": "research",  
-        "effect": lambda: handle_upgrade("nuclear_plant", "Efficiency"),
+        "effect": lambda: handle_upgrade("nuclear_plant", "Power Efficiency"),
         "purchased": False
     },
     {
@@ -282,7 +281,7 @@ research_upgrades = [
         "name": "Double Fusion Plant Efficiency",
         "cost": 350000,  
         "currency": "research",  
-        "effect": lambda: handle_upgrade("fusion_plant", "Efficiency"),
+        "effect": lambda: handle_upgrade("fusion_plant", "Power Efficiency"),
         "purchased": False
     },
     {
@@ -296,35 +295,35 @@ research_upgrades = [
         "name": "Double Battery 1 efficiency",
         "cost": 100,
         "currency": "research",
-        "effect": lambda: handle_upgrade("battery1", "Efficiency"),
+        "effect": lambda: handle_upgrade("battery1", "Battery Efficiency"),
         "purchased": False
     },
     {
         "name": "Double Battery 2 efficiency",
         "cost": 500,
         "currency": "research",
-        "effect": lambda: handle_upgrade("battery2", "Efficiency"),
+        "effect": lambda: handle_upgrade("battery2", "Battery Efficiency"),
         "purchased": False
     },
     {
         "name": "Double House 1 efficiency",
         "cost": 100,
         "currency": "research",
-        "effect": lambda: handle_upgrade("house1", "Efficiency"),
+        "effect": lambda: handle_upgrade("house1", "House Efficiency"),
         "purchased": False
     },
     {
         "name": "Double House 2 efficiency",
         "cost": 500,
         "currency": "research",
-        "effect": lambda: handle_upgrade("house2", "Efficiency"),
+        "effect": lambda: handle_upgrade("house2", "House Efficiency"),
         "purchased": False
     },
     {
         "name": "Double House 3 efficiency",
         "cost": 1000,
         "currency": "research",
-        "effect": lambda: handle_upgrade("house3", "Efficiency"),
+        "effect": lambda: handle_upgrade("house3", "House Efficiency"),
         "purchased": False
     },
     {
@@ -482,9 +481,16 @@ def handle_upgrade(name, upgrade):
     if upgrade == "Unlock":
         unlock_building(name)
         print(f"Unlocked: {name}")
-    elif upgrade == "Efficiency":
+    elif upgrade == "Power Efficiency":
         power_per_second[name] *= 2
-        print(f"Efficiency: {name}")
+        print(f"Power Efficiency: {name}")
+    elif upgrade == "House Efficiency":
+        money_per_second[name] *= 2
+        print(f"House Efficiency: {name}")
+    elif upgrade == "Battery Efficiency":
+        battery_capacity[name] *= 2
+        update_max_power()
+        print(f"Battery Efficiency: {name}")
     elif upgrade == "Ticks":
         power_plant_ticks[name] *= 2
         print(f"Ticks: {name}")
@@ -598,6 +604,8 @@ def load_player_data():
 
             print(f"Successfully loaded save file with {len(placed_blocks)} buildings")
             idle_reward()
+
+            update_max_power()
 
     except FileNotFoundError:
         print("No save file found. Starting a new game.")
