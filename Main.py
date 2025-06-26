@@ -817,9 +817,8 @@ def render_research_tree():
                         ),
                     )
 
-                # Dynamically scale font size based on zoom, clamped to a reasonable range
-                name_font_size = max(2, min(20, int(5 * research_tree_zoom)))
-                cost_font_size = max(8, min(18, int(8 * research_tree_zoom)))
+                name_font_size = int((300 * research_tree_zoom) / 100)
+                cost_font_size = int((300 * research_tree_zoom) / 50)
 
                 # Display the name and cost on the right
                 render_text(
