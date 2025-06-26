@@ -5,20 +5,18 @@ active_popup = None
 
 # Formats building names by replacing underscores with spaces and capitalizing words
 def format_building_name(name):
-    """Format building name to be more readable"""
     return name.replace('_', ' ').title()
 
 # Creates a temporary toast notification that fades away after a duration
 def create_toast(message, duration=1500):
-    """Create a toast notification that fades away"""
     # Format any building names in the message
     if "is locked" in message:
         building_name = message.split(" is locked")[0]
         formatted_name = format_building_name(building_name)
         message = message.replace(building_name, formatted_name)
 
-    # Remove oldest toast if we have more than 5
-    if len(active_toast_notifications) >= 5:
+    # Remove oldest toast if we have more than 3
+    if len(active_toast_notifications) >= 3:
         active_toast_notifications.pop(0)  # Remove oldest toast
 
     active_toast_notifications.append({
@@ -30,7 +28,6 @@ def create_toast(message, duration=1500):
 
 # Creates a modal popup with a title, message, and close button
 def create_popup(title, message):
-    """Create a centered popup with close button"""
     global active_popup
     active_popup = {
         "title": title,
@@ -39,13 +36,11 @@ def create_popup(title, message):
 
 # Closes the currently active popup
 def close_popup():
-    """Close the active popup"""
     global active_popup
     active_popup = None
 
 # Renders all active notifications (toasts and popups) on the screen
 def render_notifications(screen, font):
-    """Render all active notifications"""
     current_time = pygame.time.get_ticks()
     screen_width = screen.get_width()
     
@@ -142,7 +137,6 @@ def render_notifications(screen, font):
 
 # Handles click interactions with popup close buttons
 def handle_popup_click(pos):
-    """Handle clicks on the popup close button"""
     if active_popup and "close_rect" in active_popup:
         if active_popup["close_rect"].collidepoint(pos):
             close_popup()

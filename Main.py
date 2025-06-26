@@ -292,36 +292,36 @@ research_upgrades = [
         "purchased": False
     },
     {
-        "name": "Double Battery 1 efficiency",
-        "cost": 100,
+        "name": "Double Battery 1 Efficiency",
+        "cost": 2500,
         "currency": "research",
         "effect": lambda: handle_upgrade("battery1", "Battery Efficiency"),
         "purchased": False
     },
     {
-        "name": "Double Battery 2 efficiency",
-        "cost": 500,
+        "name": "Double Battery 2 Efficiency",
+        "cost": 50000,
         "currency": "research",
         "effect": lambda: handle_upgrade("battery2", "Battery Efficiency"),
         "purchased": False
     },
     {
-        "name": "Double House 1 efficiency",
-        "cost": 100,
+        "name": "Double House 1 Efficiency",
+        "cost": 5000,
         "currency": "research",
         "effect": lambda: handle_upgrade("house1", "House Efficiency"),
         "purchased": False
     },
     {
-        "name": "Double House 2 efficiency",
-        "cost": 500,
+        "name": "Double House 2 Efficiency",
+        "cost": 20000,
         "currency": "research",
         "effect": lambda: handle_upgrade("house2", "House Efficiency"),
         "purchased": False
     },
     {
-        "name": "Double House 3 efficiency",
-        "cost": 1000,
+        "name": "Double House 3 Efficiency",
+        "cost": 100000,
         "currency": "research",
         "effect": lambda: handle_upgrade("house3", "House Efficiency"),
         "purchased": False
@@ -356,14 +356,14 @@ research_upgrades = [
     },
     {
         "name": "Unlock House 2",
-        "cost": 5000,
+        "cost": 10000,
         "currency": "research",
         "effect": lambda: handle_upgrade("house2", "Unlock"),
         "purchased": False
     },
     {
         "name": "Unlock House 3",
-        "cost": 10000,
+        "cost": 50000,
         "currency": "research",
         "effect": lambda: handle_upgrade("house3", "Unlock"),
         "purchased": False
@@ -405,7 +405,7 @@ research_upgrades = [
     },
     {
         "name": "Unlock Battery 2",
-        "cost": 1250,
+        "cost": 20000,
         "currency": "research",
         "effect": lambda: handle_upgrade("battery2", "Unlock"),
         "purchased": False
@@ -416,45 +416,49 @@ research_upgrades = [
 tree_layout = [
     # 1st node row
     [
-        {"name": "Double Wind Turbine Ticks", "x": 0, "y": 400, "image": power_plant_images[0], "unlocks": ["Unlock Research Lab 1", "Double Wind Turbine Efficiency"]},
+        {"name": "Double Wind Turbine Ticks", "x": 0, "y": 500, "image": power_plant_images[0], "unlocks": ["Unlock Research Lab 1"]},
     ],
     # 2nd node row
     [
-        {"name": "Unlock Research Lab 1", "x": 500, "y": 300, "image": lab_images[0], "unlocks": ["Unlock Solar Panels", "Unlock Research Lab 2", "Unlock Battery 1"]},
-        {"name": "Double Wind Turbine Efficiency", "x": 500, "y": 500, "image": power_plant_images[0], "unlocks": ["Automatically Repair Wind Turbines"]},
+        {"name": "Unlock Research Lab 1", "x": 500, "y": 500, "image": lab_images[0], "unlocks": ["Unlock Solar Panels", "Unlock Research Lab 2", "Unlock Battery 1", "Double Wind Turbine Efficiency"]},
     ],
     # 3rd node row
     [
         {"name": "Unlock Solar Panels", "x": 1000, "y": 100, "image": power_plant_images[1], "unlocks": ["Double Solar Panel Ticks", "Double Solar Panel Efficiency"]},
         {"name": "Unlock Research Lab 2", "x": 1000, "y": 300, "image": lab_images[1], "unlocks": ["Unlock Research Lab 3"]},
-        {"name": "Unlock Battery 1", "x": 1000, "y": 500, "image": battery_images[0], "unlocks": ["Unlock Battery 2", "Unlock House 1"]},
-        {"name": "Automatically Repair Wind Turbines", "x": 1000, "y": 700, "image": power_plant_images[0], "unlocks": []},
+        {"name": "Unlock Battery 1", "x": 1000, "y": 700, "image": battery_images[0], "unlocks": ["Unlock Battery 2", "Unlock House 1", "Double Battery 1 Efficiency"]},
+        {"name": "Double Wind Turbine Efficiency", "x": 1000, "y": 900, "image": power_plant_images[0], "unlocks": ["Automatically Repair Wind Turbines"]},
     ],
     # 4th node row
     [
         {"name": "Double Solar Panel Ticks", "x": 1500, "y": -100, "image": power_plant_images[1], "unlocks": ["Automatically Repair Solar Panels"]},
         {"name": "Double Solar Panel Efficiency", "x": 1500, "y": 100, "image": power_plant_images[1], "unlocks": ["Unlock Coal Plant"]},
         {"name": "Unlock Research Lab 3", "x": 1500, "y": 300, "image": lab_images[2], "unlocks": []},
-        {"name": "Unlock Battery 2", "x": 1500, "y": 500, "image": battery_images[1], "unlocks": [""]},
-        {"name": "Unlock House 1", "x": 1500, "y": 700, "image": house_images[0], "unlocks": ["Unlock House 2"]},
+        {"name": "Unlock Battery 2", "x": 1500, "y": 500, "image": battery_images[1], "unlocks": ["Double Battery 2 Efficiency"]},
+        {"name": "Unlock House 1", "x": 1500, "y": 900, "image": house_images[0], "unlocks": ["Unlock House 2", "Double House 1 Efficiency"]},
+        {"name": "Double Battery 1 Efficiency", "x": 1500, "y": 700, "image": battery_images[0], "unlocks": [""]},
+        {"name": "Automatically Repair Wind Turbines", "x": 1500, "y": 1100, "image": power_plant_images[0], "unlocks": []},
     ],
     # 5th node row
     [
         {"name": "Automatically Repair Solar Panels", "x": 2000, "y": -100, "image": power_plant_images[1], "unlocks": []},
         {"name": "Unlock Coal Plant", "x": 2000, "y": 100, "image": power_plant_images[2], "unlocks": ["Double Coal Plant Ticks", "Double Coal Plant Efficiency"]},
-        {"name": "Double Battery 1 efficiency", "x": 2000, "y": 500, "image": battery_images[0], "unlocks": []},
-        {"name": "Unlock House 2", "x": 2000, "y": 700, "image": house_images[1], "unlocks": ["Unlock House 3"]},
+        {"name": "Double Battery 2 Efficiency", "x": 2000, "y": 500, "image": battery_images[1], "unlocks": []},
+        {"name": "Unlock House 2", "x": 2000, "y": 900, "image": house_images[1], "unlocks": ["Unlock House 3", "Double House 2 Efficiency"]},
+        {"name": "Double House 1 Efficiency", "x": 2000, "y": 1100, "image": house_images[0], "unlocks": [""]},
     ],
     # 6th node row
     [
         {"name": "Double Coal Plant Ticks", "x": 2500, "y": -100, "image": power_plant_images[2], "unlocks": ["Automatically Repair Coal Plants"]},
         {"name": "Double Coal Plant Efficiency", "x": 2500, "y": 100, "image": power_plant_images[2], "unlocks": ["Unlock Nuclear Plant"]},
-        {"name": "Unlock House 3", "x": 2500, "y": 700, "image": house_images[2], "unlocks": []},
+        {"name": "Unlock House 3", "x": 2500, "y": 900, "image": house_images[2], "unlocks": ["Double House 3 Efficiency"]},
+        {"name": "Double House 2 Efficiency", "x": 2500, "y": 1100, "image": house_images[1], "unlocks": [""]},
     ],
     # 7th node row
     [
         {"name": "Automatically Repair Coal Plants", "x": 3000, "y": -100, "image": power_plant_images[2], "unlocks": []},
         {"name": "Unlock Nuclear Plant", "x": 3000, "y": 100, "image": power_plant_images[3], "unlocks": ["Double Nuclear Plant Ticks", "Double Nuclear Plant Efficiency"]},
+        {"name": "Double House 3 Efficiency", "x": 3000, "y": 1100, "image": house_images[2], "unlocks": [""]},
     ],
     # 8th node row
     [
@@ -487,6 +491,7 @@ def handle_upgrade(name, upgrade):
     elif upgrade == "House Efficiency":
         money_per_second[name] *= 2
         print(f"House Efficiency: {name}")
+        print(f"New Money per Second for {name}: {money_per_second[name]}")
     elif upgrade == "Battery Efficiency":
         battery_capacity[name] *= 2
         update_max_power()
@@ -595,7 +600,7 @@ def load_player_data():
             # Calculate idle time after everything else is loaded
             time_logged_out = player_data.get("time_logged_out", now.strftime("%d-%m-%Y %H:%M:%S"))
             idle_seconds = calculate_time_difference(time_logged_out, now.strftime("%d-%m-%Y %H:%M:%S"))
-            
+             
             # Load unlocked areas last
             unlocked_areas = player_data.get("unlocked_areas", {})
             for region_name, unlocked in unlocked_areas.items():
@@ -728,16 +733,6 @@ def render_research_tree():
     global back_button_rect
     screen.fill((50, 50, 50))
 
-    # Draw a fixed background for the title, back button, and resource displays
-    header_rect = pygame.Rect(0, 0, new_screen_width, 200)
-    pygame.draw.rect(screen, (30, 30, 30), header_rect)
-
-    # Render title, back button, and resource displays
-    render_text("Research Tree", 43, (255, 255, 255), (new_screen_width // 2 - 150, 50))  
-    back_button_rect = render_text("< Back", 15, (255, 255, 255), (new_screen_width - (new_screen_width / 1.1), 45), True, (100, 40), (100, 100, 100))  
-    render_text(f"Research Points: {format_number(research)} RP", 15, (255, 255, 255), (20, 140))  
-    render_text(f"Money: ${format_number(money)}", 15, (255, 255, 255), (20, 160))  
-
     # Draw connections between nodes
     for i in range(len(tree_layout)):
         for node in tree_layout[i]:
@@ -822,28 +817,44 @@ def render_research_tree():
                         ),
                     )
 
+                # Dynamically scale font size based on zoom, clamped to a reasonable range
+                name_font_size = max(2, min(20, int(5 * research_tree_zoom)))
+                cost_font_size = max(8, min(18, int(8 * research_tree_zoom)))
+
                 # Display the name and cost on the right
                 render_text(
                     node["name"],
-                    int(5 * research_tree_zoom),  # Dynamically scale font size
+                    name_font_size,
                     (255, 255, 255),
                     (
-                        node["x"] * research_tree_zoom + 100 * research_tree_zoom + research_tree_offset_x,  # Adjust position with zoom
-                        node["y"] * research_tree_zoom + 20 * research_tree_zoom + research_tree_offset_y,  # Adjust position with zoom
+                        node["x"] * research_tree_zoom + 100 * research_tree_zoom + research_tree_offset_x,
+                        node["y"] * research_tree_zoom + 20 * research_tree_zoom + research_tree_offset_y,
                     ),
                 )
 
                 render_text(
                     f"Cost: {'$' if upgrade['currency'] == 'money' else ''} {format_number(upgrade['cost'])} {'RP' if upgrade['currency'] == 'research' else ''}",
-                    int(10 * research_tree_zoom),  # Dynamically scale font size
+                    cost_font_size,
                     (255, 255, 255),
                     (
-                        node["x"] * research_tree_zoom + 100 * research_tree_zoom + research_tree_offset_x,  # Adjust position with zoom
-                        node["y"] * research_tree_zoom + 60 * research_tree_zoom + research_tree_offset_y,  # Adjust position with zoom
+                        node["x"] * research_tree_zoom + 100 * research_tree_zoom + research_tree_offset_x,
+                        node["y"] * research_tree_zoom + 60 * research_tree_zoom + research_tree_offset_y,
                     ),
                 )
             else:
                 node["button_rect"] = None
+    
+    # Draw a semi-transparent header background
+    header_surface = pygame.Surface((new_screen_width, 200), pygame.SRCALPHA)
+    header_surface.fill((30, 30, 30, 200))  # 200/255 alpha for slight transparency
+    screen.blit(header_surface, (0, 0))
+
+    # Render title, back button, and resource displays
+    render_text("Research Tree", 43, (255, 255, 255), (new_screen_width // 2 - 150, 50))  
+    back_button_rect = render_text("< Back", 15, (255, 255, 255), (new_screen_width - (new_screen_width / 1.1), 45), True, (100, 40), (100, 100, 100))  
+    render_text(f"Research Points: {format_number(research)} RP", 15, (255, 255, 255), (20, 140))  
+    render_text(f"Money: ${format_number(money)}", 15, (255, 255, 255), (20, 160))  
+
 
 # Handles click interactions within the research tree interface
 def handle_research_tree_click(mouse_pos):
