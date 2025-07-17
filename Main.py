@@ -1047,15 +1047,15 @@ def render_research_tree():
                                     ]
                                 )
                                 if upgrade["purchased"]:
-                                    line_color = (0, 100, 250)  # Blue for purchased
+                                    line_color = (0, 100, 250)  
                                 elif prerequisites_met:
                                     line_color = (
                                         0,
                                         200,
                                         0,
-                                    )  # Bright green for unlockable
+                                    )  
                                 else:
-                                    line_color = (125, 50, 50)  # Red tint for locked
+                                    line_color = (125, 50, 50) 
 
                                 # Calculate the start and end points of the line
                                 start_x = (
@@ -1113,17 +1113,17 @@ def render_research_tree():
                     else research >= upgrade["cost"]
                 )
                 if upgrade["purchased"]:
-                    button_color = (0, 100, 250)  # Blue for purchased
+                    button_color = (0, 100, 250)  
                 elif affordable and prerequisites_met:
-                    button_color = (0, 200, 0)  # Bright green for unlockable
+                    button_color = (0, 200, 0)  
                 else:
-                    button_color = (115, 100, 100)  # Red tint for locked
+                    button_color = (115, 100, 100)  
 
                 button_rect = pygame.Rect(
                     node["x"] * research_tree_zoom + research_tree_offset_x,
                     node["y"] * research_tree_zoom + research_tree_offset_y,
-                    300 * research_tree_zoom,  # Width of the button
-                    100 * research_tree_zoom,  # Height of the button
+                    300 * research_tree_zoom,
+                    100 * research_tree_zoom, 
                 )
                 corner_radius = int(
                     min(300 * research_tree_zoom, 100 * research_tree_zoom) // 6.4
@@ -1152,7 +1152,6 @@ def render_research_tree():
                 cost_font_size = int((300 * research_tree_zoom) / 50)
 
                 # Display the name and cost on the right
-                # Split the upgrade name into two lines if it's longer than 10 characters, keeping words together
                 upgrade_name = node["name"]
                 words = upgrade_name.split()
                 if len(upgrade_name) > 10 and len(words) > 1:
@@ -1219,7 +1218,7 @@ def render_research_tree():
 
     # Draw a semi-transparent header background
     header_surface = pygame.Surface((new_screen_width, 200), pygame.SRCALPHA)
-    header_surface.fill((30, 30, 30, 200))  # 200/255 alpha for slight transparency
+    header_surface.fill((30, 30, 30, 200))
     screen.blit(header_surface, (0, 0))
 
     # Render title, back button, and resource displays
